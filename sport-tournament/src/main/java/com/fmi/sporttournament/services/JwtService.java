@@ -37,7 +37,10 @@ public class JwtService {
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        return buildToken(extraClaims, userDetails, jwtExpiration);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", userDetails.getAuthorities());
+        claims.putAll(extraClaims);
+        return buildToken(claims, userDetails, jwtExpiration);
     }
 
     public long getExpirationTime() {
