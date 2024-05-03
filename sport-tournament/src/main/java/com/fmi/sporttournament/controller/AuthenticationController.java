@@ -3,6 +3,7 @@ package com.fmi.sporttournament.controller;
 import com.fmi.sporttournament.Dto.LoginUserDto;
 import com.fmi.sporttournament.Dto.RegisterUserDto;
 import com.fmi.sporttournament.Dto.responses.LoginResponse;
+import com.fmi.sporttournament.Dto.responses.RegisterResponse;
 import com.fmi.sporttournament.entity.User;
 import com.fmi.sporttournament.services.AuthenticationService;
 import com.fmi.sporttournament.services.JwtService;
@@ -25,10 +26,19 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<User> register(@RequestBody RegisterUserDto registerUserDto) {
+    public ResponseEntity<RegisterResponse> register(@RequestBody RegisterUserDto registerUserDto) {
         User registeredUser = authenticationService.signup(registerUserDto);
 
-        return ResponseEntity.ok(registeredUser);
+        String jwtToken = jwtService.generateToken(registeredUser);
+
+        RegisterResponse registerResponse = RegisterResponse.builder()
+                .fullName(registeredUser.getFullName())
+                .email(registeredUser.getEmail())
+                .token(jwtToken)
+                .expiresIn(jwtService.getExpirationTime())
+                .build();
+
+        return ResponseEntity.ok(registerResponse);
     }
 
     @PostMapping("/login")
