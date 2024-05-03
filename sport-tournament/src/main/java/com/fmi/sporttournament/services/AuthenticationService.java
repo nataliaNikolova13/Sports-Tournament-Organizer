@@ -28,6 +28,10 @@ public class AuthenticationService {
     }
 
     public User signup(RegisterUserDto input) {
+        if (userRepository.existsByEmail(input.getEmail())) {
+            throw new IllegalArgumentException("Email already exists");
+        }
+
         var user = User.builder()
                 .fullName(input.getFullName())
                 .email(input.getEmail())
