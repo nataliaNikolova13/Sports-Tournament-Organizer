@@ -1,0 +1,57 @@
+package com.fmi.sporttournament.controller;
+
+import com.fmi.sporttournament.Dto.LoginUserDto;
+import com.fmi.sporttournament.Dto.RegisterUserDto;
+import com.fmi.sporttournament.Dto.responses.LoginResponse;
+import com.fmi.sporttournament.Dto.responses.RegisterResponse;
+import com.fmi.sporttournament.entity.User;
+import com.fmi.sporttournament.services.AuthenticationService;
+import com.fmi.sporttournament.services.JwtService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RequestMapping("/auth")
+@RestController
+public class AuthenticationController {
+    private final JwtService jwtService;
+
+    private final AuthenticationService authenticationService;
+
+    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService) {
+        this.jwtService = jwtService;
+        this.authenticationService = authenticationService;
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<RegisterResponse> register(@RequestBody RegisterUserDto registerUserDto) {
+        User registeredUser = authenticationService.signup(registerUserDto);
+
+        String jwtToken = jwtService.generateToken(registeredUser);
+
+        RegisterResponse registerResponse = RegisterResponse.builder()
+                .fullName(registeredUser.getFullName())
+                .email(registeredUser.getEmail())
+                .token(jwtToken)
+                .expiresIn(jwtService.getExpirationTime())
+                .build();
+
+        return ResponseEntity.ok(registerResponse);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto) {
+        User authenticatedUser = authenticationService.authenticate(loginUserDto);
+
+        String jwtToken = jwtService.generateToken(authenticatedUser);
+
+        LoginResponse loginResponse = LoginResponse.builder()
+                .token(jwtToken)
+                .expiresIn(jwtService.getExpirationTime())
+                .build();
+
+        return ResponseEntity.ok(loginResponse);
+    }
+}
