@@ -1,7 +1,11 @@
 package com.fmi.sporttournament.entity;
 
+import com.fmi.sporttournament.entity.enums.ParticipantStatus;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.util.Date;
 
 @Entity
 @Data
@@ -18,4 +22,12 @@ public class Participant {
     @ManyToOne
     @JoinColumn(name = "team_id")
     private Team team;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private ParticipantStatus status;
+
+    @CreationTimestamp
+    @Column(updatable = false, name = "time_stamp")
+    private Date timeStamp;
 }
