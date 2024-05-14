@@ -6,6 +6,7 @@ import com.fmi.sporttournament.entity.User;
 import com.fmi.sporttournament.entity.enums.Role;
 import com.fmi.sporttournament.mapper.UserMapper;
 import com.fmi.sporttournament.services.UserService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/user")
+@SecurityRequirement(name = "bearerAuth")
 public class UserController {
     private final UserService userService;
     private final UserMapper userMapper;
