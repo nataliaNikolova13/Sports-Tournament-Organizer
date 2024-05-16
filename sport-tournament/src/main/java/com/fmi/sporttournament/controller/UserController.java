@@ -53,7 +53,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{userId}/role")
+    @PutMapping("/role/{userId}")
     public ResponseEntity<UserDto> updateUserRole(@PathVariable Long userId, @RequestBody ChangeRoleRequest changeRoleRequest) {
         Optional<User> userOptional = userService.updateUserRole(userId, changeRoleRequest);
         if (userOptional.isPresent()) {
