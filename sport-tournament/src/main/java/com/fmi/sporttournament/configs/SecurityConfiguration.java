@@ -42,6 +42,7 @@ public class SecurityConfiguration{
                 .authorizeHttpRequests(req ->
                         req.requestMatchers(WHITE_LIST_URL)
                                 .permitAll()
+                                .requestMatchers("/user/role/**").hasRole("Admin")
                                 .anyRequest()
                                 .authenticated()
                 )
