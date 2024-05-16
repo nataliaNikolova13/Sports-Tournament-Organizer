@@ -10,10 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,9 +24,23 @@ public class ParticipantController {
         try{
             Participant participant = participantService.addParticipantToTeam(participantRequest);
             return ResponseEntity.ok(participantMapper.participantToResponse(participant));
-        } catch (Exception e){
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }catch (Exception e){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
+    }
+
+    @DeleteMapping
+    public ResponseEntity<ParticipantResponse> removeParticipant(@RequestBody ParticipantRequest participantRequest){
+        try{
+            Participant participant = participantService.removeParticipantFromTeam(participantRequest);
+            return ResponseEntity.ok(participantMapper.participantToResponse(participant));
+        }catch (IllegalStateException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 }
