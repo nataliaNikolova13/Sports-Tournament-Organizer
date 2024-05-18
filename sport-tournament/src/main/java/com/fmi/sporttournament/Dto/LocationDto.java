@@ -7,16 +7,12 @@ import com.fmi.sporttournament.entity.Venue;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
-import java.util.HashSet;
 import java.util.Set;
 
 @Data
 @RequiredArgsConstructor
 public class LocationDto {
-
-    private Location locationName;
-
-    private Set<Venue> venues = new HashSet<>();
-
-    private Set<Tournament> tournaments = new HashSet<>();
+    private String locationName;
+    private Set<Venue> venue;
+    private Set<Tournament> tournaments;
 }

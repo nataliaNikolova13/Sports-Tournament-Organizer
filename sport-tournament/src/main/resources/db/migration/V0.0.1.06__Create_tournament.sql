@@ -5,8 +5,8 @@ CREATE TABLE tournaments (
     location_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    start_at TIMESTAMP,
-    end_at TIMESTAMP,
+    start_at TIMESTAMP NOT NULL,
+    end_at TIMESTAMP NOT NULL,
 	PRIMARY KEY (id),
 	UNIQUE KEY (tournament_name),
     FOREIGN KEY (location_id) REFERENCES locations(id)

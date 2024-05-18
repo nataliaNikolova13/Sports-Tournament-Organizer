@@ -8,6 +8,5 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class VenueDto {
     private Long id;
-
     private Location location;
 }

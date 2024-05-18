@@ -1,11 +1,11 @@
 package com.fmi.sporttournament.services;
 
 import com.fmi.sporttournament.entity.Location;
-import com.fmi.sporttournament.entity.Venue;
+
 import com.fmi.sporttournament.repositories.LocationRepository;
-import com.fmi.sporttournament.repositories.VenueRepository;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,6 +17,9 @@ public class LocationService {
 
     private final LocationRepository locationRepository;
 
+    public Optional<Location> getLocationById(Long id) {
+        return locationRepository.findById(id);
+    }
     public List<Location> getAllLocations() {
         return locationRepository.findAll();
     }
@@ -25,4 +28,7 @@ public class LocationService {
         return locationRepository.findByLocationName(tournamentName);
     }
 
+    public void removeLocation(Long id) {
+        locationRepository.deleteById(id);
+    }
 }

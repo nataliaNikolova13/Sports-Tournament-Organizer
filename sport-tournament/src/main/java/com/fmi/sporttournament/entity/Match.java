@@ -1,14 +1,15 @@
 package com.fmi.sporttournament.entity;
 
-import jakarta.persistence.CascadeType;
+import com.fmi.sporttournament.entity.enums.MatchResult;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -20,38 +21,36 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
-import java.util.Set;
 
-@Table(name = "tournaments")
+@Table(name = "matches")
 @Entity
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Tournament {
+public class Match {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false)
     private Long id;
 
-    @Column(nullable = false, name = "tournament_name")
-    private String tournamentName;
-
-    @Column(nullable = false, name = "sport_type")
-    private String sportType;
+    @ManyToOne
+    @JoinColumn(name = "tournament_id", nullable = false)
+    private Tournament tournament;
 
     @ManyToOne
-    @JoinColumn(name = "location_id", nullable = false)
-    private Location location;
+    @JoinColumn(name = "venue_id", nullable = false)
+    private Venue venue;
 
-    @OneToMany(mappedBy = "tournament", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Team> teams;
+    @ManyToOne
+    @JoinColumn(name = "team_1", nullable = false)
+    private Team team_1;
 
-    @OneToMany(mappedBy = "tournament", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Match> matches;
+    @ManyToOne
+    @JoinColumn(name = "team_2", nullable = false)
+    private Team team_2;
 
-    @OneToMany(mappedBy = "tournament", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<TeamResult> teamResults;
+    @Column
+    private Long round;
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
@@ -68,4 +67,8 @@ public class Tournament {
     @CreationTimestamp
     @Column(updatable = false, name = "end_at")
     private Date endAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name="match_result")
+    private MatchResult matchResult;
 }
