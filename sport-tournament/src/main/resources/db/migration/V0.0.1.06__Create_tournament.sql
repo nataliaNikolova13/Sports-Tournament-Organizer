@@ -1,0 +1,13 @@
+CREATE TABLE tournaments (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    tournament_name VARCHAR(255) NOT NULL,
+    sport_type VARCHAR(255) NOT NULL,
+    location_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    start_at TIMESTAMP,
+    end_at TIMESTAMP,
+	PRIMARY KEY (id),
+	UNIQUE KEY (tournament_name),
+    FOREIGN KEY (location_id) REFERENCES locations(id)
+);

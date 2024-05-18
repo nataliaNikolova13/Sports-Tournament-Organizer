@@ -16,4 +16,8 @@ public class Team {
 
     @Enumerated(EnumType.STRING)
     private TeamCategory category;
+
+    @ManyToOne
+    @JoinColumn(name = "tournament_id", nullable = false)
+    private Tournament tournament;
 }
