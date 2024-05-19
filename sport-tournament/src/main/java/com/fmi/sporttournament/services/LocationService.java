@@ -17,17 +17,16 @@ public class LocationService {
 
     private final LocationRepository locationRepository;
 
-    public Optional<Location> getLocationById(Long id) {
-        return locationRepository.findById(id);
-    }
     public List<Location> getAllLocations() {
         return locationRepository.findAll();
+    }
+    public Optional<Location> getLocationById(Long id) {
+        return locationRepository.findById(id);
     }
 
     public Optional<Location> getLocationByTournamentName(String tournamentName) {
         return locationRepository.findByLocationName(tournamentName);
     }
-
     public void removeLocation(Long id) {
         locationRepository.deleteById(id);
     }

@@ -42,15 +42,26 @@ public class TournamentController {
         return tournament.map(value -> new ResponseEntity<>(tournamentMapper.tournamentToDto(value), HttpStatus.OK))
             .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
+    @GetMapping("/name/{tournamentName}")
+    public ResponseEntity<TournamentDto> getTournamentByTournamentName(@PathVariable String tournamentName) {
+        Optional<Tournament> tournamentOptional = tournamentService.getTournamentByTournamentName(tournamentName);
+        return tournamentOptional.map(tournament -> new ResponseEntity<>(tournamentMapper.tournamentToDto(tournament), HttpStatus.OK))
+            .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
 
+    @GetMapping("/sport-type/{sportType}")
+    public ResponseEntity<List<TournamentDto>> getTournamentBySportType(@PathVariable String sportType) {
+        List<Tournament> tournaments = tournamentService.getTournamentBySportType(sportType);
+        return new ResponseEntity<>(tournamentMapper.tournamentsToTournamentDtos(tournaments), HttpStatus.OK);
+    }
     @GetMapping("/location/{locationName}")
-    public ResponseEntity<List<TournamentDto>> getUserByLocation(@PathVariable String locationName) {
+    public ResponseEntity<List<TournamentDto>> getTournamentByLocation(@PathVariable String locationName) {
         List<Tournament> tournaments = tournamentService.getTournamentByLocationName(locationName);
         return new ResponseEntity<>(tournamentMapper.tournamentsToTournamentDtos(tournaments), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<String> deleteTournament(@PathVariable Long id) {
         tournamentService.removeTournament(id);
         return ResponseEntity.ok().build();
     }
