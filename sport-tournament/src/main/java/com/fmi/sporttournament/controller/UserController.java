@@ -24,35 +24,37 @@ public class UserController {
     private final UserMapper userMapper;
 
     @GetMapping
-    public ResponseEntity<List<UserDto>> getAllUsers(){
+    public ResponseEntity<List<UserDto>> getAllUsers() {
         List<User> allUsers = userService.getAllUsers();
         return new ResponseEntity<>(userMapper.usersToUserDtos(allUsers), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable Long id){
+    public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
         Optional<User> user = userService.getUserById(id);
-        return user.map(value -> new ResponseEntity<>(userMapper.userToDto(value), HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        return user.map(value -> new ResponseEntity<>(userMapper.userToDto(value), HttpStatus.OK))
+            .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @GetMapping("/email/{email}")
-    public ResponseEntity<UserDto> getUserByEmail(@PathVariable String email){
+    public ResponseEntity<UserDto> getUserByEmail(@PathVariable String email) {
         Optional<User> user = userService.getUserByEmail(email);
-        return user.map(value -> new ResponseEntity<>(userMapper.userToDto(value), HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        return user.map(value -> new ResponseEntity<>(userMapper.userToDto(value), HttpStatus.OK))
+            .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @GetMapping("/role/{role}")
-    public ResponseEntity<List<UserDto>> getUserByRole(@PathVariable Role role){
+    public ResponseEntity<List<UserDto>> getUserByRole(@PathVariable Role role) {
         List<User> users = userService.getUsersByRole(role);
         return new ResponseEntity<>(userMapper.usersToUserDtos(users), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable Long id){
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         userService.removeUser(id);
         return ResponseEntity.ok().build();
     }
-
+    
     @PutMapping("/role/{userId}")
     public ResponseEntity<UserDto> updateUserRole(@PathVariable Long userId, @RequestBody ChangeRoleRequest changeRoleRequest) {
         Optional<User> userOptional = userService.updateUserRole(userId, changeRoleRequest);
