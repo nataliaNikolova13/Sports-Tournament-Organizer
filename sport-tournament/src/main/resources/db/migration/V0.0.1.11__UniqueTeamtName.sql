@@ -1,0 +1,2 @@
+ALTER TABLE teams
+ADD CONSTRAINT UK_team_name UNIQUE (name);

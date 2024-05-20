@@ -1,6 +1,8 @@
 package com.fmi.sporttournament.controller;
 
-import com.fmi.sporttournament.Dto.TournamentDto;
+import com.fmi.sporttournament.Dto.requests.tournament.TournamentRegistrationRequest;
+
+import com.fmi.sporttournament.Dto.responses.tournament.TournamentResponse;
 
 import com.fmi.sporttournament.entity.Tournament;
 
@@ -17,10 +19,11 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -30,39 +33,34 @@ public class TournamentController {
     private final TournamentService tournamentService;
     private final TournamentMapper tournamentMapper;
 
-    @GetMapping
-    public ResponseEntity<List<TournamentDto>> getAllTournaments() {
-        List<Tournament> allTournament = tournamentService.getAllTournaments();
-        return new ResponseEntity<>(tournamentMapper.tournamentsToTournamentDtos(allTournament), HttpStatus.OK);
-    }
-
     @GetMapping("/{id}")
-    public ResponseEntity<TournamentDto> getTournamentById(@PathVariable Long id) {
+    public ResponseEntity<TournamentResponse> getTournamentById(@PathVariable Long id) {
         Optional<Tournament> tournament = tournamentService.getTournamentById(id);
-        return tournament.map(value -> new ResponseEntity<>(tournamentMapper.tournamentToDto(value), HttpStatus.OK))
+        return tournament.map(value -> new ResponseEntity<>(tournamentMapper.tournamentToResponse(value), HttpStatus.OK))
             .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
     @GetMapping("/name/{tournamentName}")
-    public ResponseEntity<TournamentDto> getTournamentByTournamentName(@PathVariable String tournamentName) {
+    public ResponseEntity<TournamentResponse> getTournamentByTournamentName(@PathVariable String tournamentName) {
         Optional<Tournament> tournamentOptional = tournamentService.getTournamentByTournamentName(tournamentName);
-        return tournamentOptional.map(tournament -> new ResponseEntity<>(tournamentMapper.tournamentToDto(tournament), HttpStatus.OK))
+        return tournamentOptional.map(tournament -> new ResponseEntity<>(tournamentMapper.tournamentToResponse(tournament), HttpStatus.OK))
             .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
-    }
-
-    @GetMapping("/sport-type/{sportType}")
-    public ResponseEntity<List<TournamentDto>> getTournamentBySportType(@PathVariable String sportType) {
-        List<Tournament> tournaments = tournamentService.getTournamentBySportType(sportType);
-        return new ResponseEntity<>(tournamentMapper.tournamentsToTournamentDtos(tournaments), HttpStatus.OK);
-    }
-    @GetMapping("/location/{locationName}")
-    public ResponseEntity<List<TournamentDto>> getTournamentByLocation(@PathVariable String locationName) {
-        List<Tournament> tournaments = tournamentService.getTournamentByLocationName(locationName);
-        return new ResponseEntity<>(tournamentMapper.tournamentsToTournamentDtos(tournaments), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteTournament(@PathVariable Long id) {
         tournamentService.removeTournament(id);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/create-tournament")
+    public ResponseEntity<TournamentResponse> createLocation(@RequestBody TournamentRegistrationRequest tournamentRequest) {
+        try{
+            Tournament tournament = tournamentService.createTournament(tournamentRequest);
+            return ResponseEntity.ok(tournamentMapper.tournamentToResponse(tournament));
+        } catch (IllegalStateException|IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }catch (Exception e){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 }

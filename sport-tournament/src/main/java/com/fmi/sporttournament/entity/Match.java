@@ -52,19 +52,9 @@ public class Match {
     @Column
     private Long round;
 
-    @CreationTimestamp
-    @Column(updatable = false, name = "created_at")
-    private Date createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private Date updatedAt;
-
-    @CreationTimestamp
     @Column(updatable = false, name = "start_at")
     private Date startAt;
 
-    @CreationTimestamp
     @Column(updatable = false, name = "end_at")
     private Date endAt;
 

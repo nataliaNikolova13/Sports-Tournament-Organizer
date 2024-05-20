@@ -14,6 +14,5 @@ public interface TeamResultRepository extends JpaRepository<TeamResult, Long> {
     Optional<TeamResult> findById(Long Id);
     Optional<TeamResult> findByTeamId(Long teamId);
     List<TeamResult> findByTournamentId(Long tournamentId);
-
     List<TeamResult> findAll();
 }

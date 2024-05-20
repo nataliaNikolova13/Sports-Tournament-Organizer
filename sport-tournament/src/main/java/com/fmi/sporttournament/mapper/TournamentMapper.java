@@ -1,18 +1,19 @@
 package com.fmi.sporttournament.mapper;
 
-import com.fmi.sporttournament.Dto.TournamentDto;
+import com.fmi.sporttournament.Dto.requests.tournament.TournamentCreationRequest;
+import com.fmi.sporttournament.Dto.responses.tournament.TournamentResponse;
 
 import com.fmi.sporttournament.entity.Tournament;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface TournamentMapper {
-    TournamentDto tournamentToDto(Tournament tournament);
+    @Mapping(target = "id", ignore = true)
+    Tournament requestToTournament(TournamentCreationRequest tournamentCreationRequest);
 
-    Tournament tournamentFromDto(TournamentDto tournamentDto);
-
-    List<TournamentDto> tournamentsToTournamentDtos(List<Tournament> tournaments);
+    @Mapping(source = "location.id", target = "locationId")
+    TournamentResponse tournamentToResponse(Tournament tournament);
 }

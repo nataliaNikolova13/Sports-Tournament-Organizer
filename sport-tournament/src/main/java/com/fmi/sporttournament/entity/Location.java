@@ -28,7 +28,7 @@ public class Location {
     @Column(nullable = false)
     private Long id;
 
-    @Column(nullable = false, name = "location_name")
+    @Column(nullable = false, name = "location_name", unique = true)
     private String locationName;
 
     @OneToMany(mappedBy = "location", cascade = CascadeType.ALL, orphanRemoval = true)

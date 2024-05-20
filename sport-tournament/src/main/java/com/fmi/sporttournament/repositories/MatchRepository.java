@@ -13,6 +13,5 @@ import java.util.Optional;
 public interface MatchRepository  extends JpaRepository<Match, Long> {
     Optional<Match> findById(Long Id);
     List<Match> findByTournamentId(Long tournamentId);
-
     List<Match> findAll();
 }

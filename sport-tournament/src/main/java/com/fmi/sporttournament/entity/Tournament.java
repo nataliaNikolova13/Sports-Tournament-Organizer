@@ -34,7 +34,7 @@ public class Tournament {
     @Column(nullable = false)
     private Long id;
 
-    @Column(nullable = false, name = "tournament_name")
+    @Column(nullable = false, name = "tournament_name", unique = true)
     private String tournamentName;
 
     @Column(nullable = false, name = "sport_type")
@@ -53,19 +53,9 @@ public class Tournament {
     @OneToMany(mappedBy = "tournament", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<TeamResult> teamResults;
 
-    @CreationTimestamp
-    @Column(updatable = false, name = "created_at")
-    private Date createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private Date updatedAt;
-
-    @CreationTimestamp
-    @Column(updatable = false, name = "start_at")
+    @Column(name = "start_at", nullable = false)
     private Date startAt;
 
-    @CreationTimestamp
-    @Column(updatable = false, name = "end_at")
+    @Column(name = "end_at", nullable = false)
     private Date endAt;
 }

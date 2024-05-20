@@ -1,6 +1,6 @@
 package com.fmi.sporttournament.controller;
 
-import com.fmi.sporttournament.Dto.VenueDto;
+import com.fmi.sporttournament.Dto.responses.tournament.VenueResponse;
 import com.fmi.sporttournament.entity.Venue;
 import com.fmi.sporttournament.mapper.VenueMapper;
 import com.fmi.sporttournament.services.VenueService;
@@ -24,21 +24,10 @@ public class VenueController {
     private final VenueMapper venueMapper;
 
     @GetMapping("/{id}")
-    public ResponseEntity<VenueDto> getVenueById(@PathVariable Long id) {
+    public ResponseEntity<VenueResponse> getVenueById(@PathVariable Long id) {
         Optional<Venue> venue = venueService.getVenueById(id);
-        return venue.map(value -> new ResponseEntity<>(venueMapper.venueToDto(value), HttpStatus.OK))
+        return venue.map(value -> new ResponseEntity<>(venueMapper.venueToResponse(value), HttpStatus.OK))
             .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
-    }
-
-    @GetMapping("/location/{locationName}")
-    public ResponseEntity<List<VenueDto>> getVenueByLocation(@PathVariable String locationName) {
-        List<Venue> venues = venueService.getAllVenuesInLocation(locationName);
-        return new ResponseEntity<>(venueMapper.venuesToVenuesDtos(venues), HttpStatus.OK);
-    }
-    @GetMapping
-    public ResponseEntity<List<VenueDto>> getAllVenues() {
-        List<Venue> allVenues = venueService.getAllVenues();
-        return new ResponseEntity<>(venueMapper.venuesToVenuesDtos(allVenues), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")

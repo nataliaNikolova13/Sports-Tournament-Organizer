@@ -5,6 +5,6 @@ CREATE TABLE results (
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   score BIGINT NOT NULL,
   PRIMARY KEY (id),
-  FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
-  FOREIGN KEY (team_id) REFERENCES teams(id)
+  FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
+  FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE
 );

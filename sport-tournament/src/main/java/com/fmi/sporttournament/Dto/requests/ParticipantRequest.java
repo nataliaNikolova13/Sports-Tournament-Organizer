@@ -6,6 +6,6 @@ import lombok.RequiredArgsConstructor;
 @Data
 @RequiredArgsConstructor
 public class ParticipantRequest {
-    private Long userId;
-    private Long teamId;
+    private final Long userId;
+    private final Long teamId;
 }
