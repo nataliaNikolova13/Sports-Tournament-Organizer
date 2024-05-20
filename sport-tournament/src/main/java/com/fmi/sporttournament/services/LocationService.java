@@ -2,10 +2,11 @@ package com.fmi.sporttournament.services;
 
 import com.fmi.sporttournament.Dto.requests.tournament.LocationRequest;
 import com.fmi.sporttournament.Dto.requests.tournament.VenueRequest;
+
 import com.fmi.sporttournament.entity.Location;
-import com.fmi.sporttournament.entity.Venue;
 
 import com.fmi.sporttournament.mapper.LocationMapper;
+
 import com.fmi.sporttournament.repositories.LocationRepository;
 
 import lombok.RequiredArgsConstructor;

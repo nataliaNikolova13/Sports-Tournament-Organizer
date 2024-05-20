@@ -34,10 +34,12 @@ public class TournamentController {
     private final TournamentMapper tournamentMapper;
 
     @GetMapping("/{id}")
-    public ResponseEntity<TournamentResponse> getTournamentById(@PathVariable Long id) {
+    public ResponseEntity<Tournament> getTournamentById(@PathVariable Long id) {
         Optional<Tournament> tournament = tournamentService.getTournamentById(id);
+        return ResponseEntity.ok(tournament.get());
+        /*
         return tournament.map(value -> new ResponseEntity<>(tournamentMapper.tournamentToResponse(value), HttpStatus.OK))
-            .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+            .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));*/
     }
     @GetMapping("/name/{tournamentName}")
     public ResponseEntity<TournamentResponse> getTournamentByTournamentName(@PathVariable String tournamentName) {

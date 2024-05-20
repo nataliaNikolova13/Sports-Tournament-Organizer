@@ -2,13 +2,16 @@ package com.fmi.sporttournament.services;
 
 import com.fmi.sporttournament.Dto.requests.tournament.TournamentCreationRequest;
 import com.fmi.sporttournament.Dto.requests.tournament.TournamentRegistrationRequest;
+
 import com.fmi.sporttournament.entity.Location;
 
 import com.fmi.sporttournament.entity.Tournament;
 
 import com.fmi.sporttournament.mapper.TournamentMapper;
+
 import com.fmi.sporttournament.repositories.LocationRepository;
 import com.fmi.sporttournament.repositories.TournamentRepository;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
@@ -50,24 +53,17 @@ public class TournamentService {
         tournamentRepository.deleteById(id);
     }
 
-    public Tournament createTournament(TournamentRegistrationRequest tournamentRegistrationRequest) {
-        String tournamentName = tournamentRegistrationRequest.getTournamentName();
-
-        if(getTournamentByTournamentName(tournamentName).isPresent()){
-            throw new IllegalArgumentException("Tournament with this name already exists");
-        }
-
+    private Location validateRequestLocation(TournamentRegistrationRequest tournamentRegistrationRequest) {
         Optional<Location> location =
             locationRepository.findByLocationName(tournamentRegistrationRequest.getLocationName());
 
         if (location.isEmpty()) {
             throw new IllegalArgumentException("Location not found");
         }
+        return location.get();
+    }
 
-        String sportType = tournamentRegistrationRequest.getSportType();
-        Date startAt = tournamentRegistrationRequest.getStartAt();
-        Date endAt = tournamentRegistrationRequest.getEndAt();
-
+    private void validateRequestDates(Date startAt, Date endAt) {
         if (endAt.toInstant().isBefore(startAt.toInstant())) {
             throw new IllegalStateException("The end date can not be before the start date of the tournament");
         }
@@ -75,9 +71,21 @@ public class TournamentService {
         if (startAt.toInstant().isBefore(Instant.now())) {
             throw new IllegalStateException("The start date can not be before the today");
         }
+    }
 
+    public Tournament createTournament(TournamentRegistrationRequest tournamentRegistrationRequest) {
+        String tournamentName = tournamentRegistrationRequest.getTournamentName();
+
+        if (getTournamentByTournamentName(tournamentName).isPresent()) {
+            throw new IllegalArgumentException("Tournament with this name already exists");
+        }
+        Location location = validateRequestLocation(tournamentRegistrationRequest);
+        String sportType = tournamentRegistrationRequest.getSportType();
+        Date startAt = tournamentRegistrationRequest.getStartAt();
+        Date endAt = tournamentRegistrationRequest.getEndAt();
+        validateRequestDates(startAt,endAt);
         TournamentCreationRequest tournamentCreationRequest =
-            new TournamentCreationRequest(tournamentName, sportType, location.get(), startAt, endAt);
+            new TournamentCreationRequest(tournamentName, sportType, location, startAt, endAt);
 
         Tournament tournament = tournamentMapper.requestToTournament(tournamentCreationRequest);
         return tournamentRepository.save(tournament);

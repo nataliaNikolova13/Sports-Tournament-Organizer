@@ -4,7 +4,6 @@ import com.fmi.sporttournament.entity.enums.TeamCategory;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Set;
 
 @Entity
 @Data

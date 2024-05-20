@@ -6,6 +6,6 @@ CREATE TABLE tournaments (
     start_at TIMESTAMP NOT NULL,
     end_at TIMESTAMP NOT NULL,
 	PRIMARY KEY (id),
-	UNIQUE KEY (tournament_name),
-    FOREIGN KEY (location_id) REFERENCES locations(id) ON DELETE CASCADE
+    FOREIGN KEY (location_id) REFERENCES locations(id) ON DELETE CASCADE,
+    CONSTRAINT UK_tournament_name UNIQUE (tournament_name)
 );

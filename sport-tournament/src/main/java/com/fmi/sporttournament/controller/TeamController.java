@@ -19,14 +19,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/teams")
 public class TeamController {
     private final TeamService teamService;
-    private final TeamMapper teamMapper;
 
     @PostMapping
     public ResponseEntity<Team> createTeam(@RequestBody TeamRegistrationRequest teamRegistrationRequest) {
         try {
             Team team = teamService.createTeam(teamRegistrationRequest);
             return ResponseEntity.ok(team);
-        } catch (IllegalStateException | IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

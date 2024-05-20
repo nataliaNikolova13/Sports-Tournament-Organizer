@@ -1,14 +1,17 @@
 package com.fmi.sporttournament.entity;
 
+import com.fmi.sporttournament.entity.enums.TournamentParticipantStatus;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -20,29 +23,30 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.Date;
 
-@Table(name = "results")
 @Entity
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TeamResult {
+@Table(name = "tournament_participants")
+public class TournamentParticipant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "tournament_id", nullable = false)
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "tournament_id")
     private Tournament tournament;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "team_id", nullable = false)
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "team_id")
     private Team team;
 
-    @Column
-    private Long score;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private TournamentParticipantStatus status;
 
     @CreationTimestamp
-    @Column(updatable = false, name = "updated_at")
-    private Date updatedAt;
+    @Column(updatable = false, name = "time_stamp")
+    private Date timeStamp;
 }

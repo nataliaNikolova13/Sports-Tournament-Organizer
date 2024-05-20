@@ -1,14 +1,18 @@
 package com.fmi.sporttournament.services;
 
 import com.fmi.sporttournament.Dto.requests.ParticipantRequest;
+
 import com.fmi.sporttournament.entity.Participant;
 import com.fmi.sporttournament.entity.Team;
 import com.fmi.sporttournament.entity.User;
 import com.fmi.sporttournament.entity.enums.ParticipantStatus;
+
 import com.fmi.sporttournament.repositories.ParticipantRepository;
 import com.fmi.sporttournament.repositories.TeamRepository;
 import com.fmi.sporttournament.repositories.UserRepositoty;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -30,7 +34,8 @@ public class ParticipantService {
     }
 
     public Participant remove(User user, Team team){
-        Participant existintParticipant = participantRepository.findByUser(user).get(participantRepository.findByUser(user).size() - 1);
+        Participant existintParticipant =
+            participantRepository.findByUser(user).get(participantRepository.findByUser(user).size() - 1);
         existintParticipant.setStatus(ParticipantStatus.left);
         existintParticipant.setTimeStamp(new Date());
         return participantRepository.save(existintParticipant);

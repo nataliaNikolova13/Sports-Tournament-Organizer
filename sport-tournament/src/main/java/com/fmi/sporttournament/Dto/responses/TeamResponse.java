@@ -8,6 +8,5 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TeamResponse {
     private String name;
-    private Long tournamentId;
     private TeamCategory category;
 }
