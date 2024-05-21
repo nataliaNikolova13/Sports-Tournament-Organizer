@@ -5,11 +5,14 @@ import com.fmi.sporttournament.Dto.requests.tournament.TournamentRegistrationReq
 
 import com.fmi.sporttournament.entity.Location;
 
+import com.fmi.sporttournament.entity.Team;
 import com.fmi.sporttournament.entity.Tournament;
 
 import com.fmi.sporttournament.mapper.TournamentMapper;
 
 import com.fmi.sporttournament.repositories.LocationRepository;
+import com.fmi.sporttournament.repositories.RoundRepository;
+import com.fmi.sporttournament.repositories.TeamRepository;
 import com.fmi.sporttournament.repositories.TournamentRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +32,8 @@ public class TournamentService {
     private final TournamentRepository tournamentRepository;
     private final TournamentMapper tournamentMapper;
     private final LocationRepository locationRepository;
+    private final TeamRepository teamRepository;
+    private final RoundRepository roundRepository;
 
     public List<Tournament> getAllTournaments() {
         return tournamentRepository.findAll();
@@ -90,4 +96,19 @@ public class TournamentService {
         Tournament tournament = tournamentMapper.requestToTournament(tournamentCreationRequest);
         return tournamentRepository.save(tournament);
     }
+
+    public void startTournament(Long tournamentId) {
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
+        List<Team> teams = teamRepository.findTeamsByTournamentId(tournamentId);
+        Collections.shuffle(teams);
+    }
+
+//    public void processNextRound(Long tournamentId) {
+//        Tournament tournament = tournamentRepository.findById(tournamentId)
+//                .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
+//
+//        int nextRoundNumber = roundRepository.findByTournamentId(tournamentId).get().getRoundNumber() + 1;
+//        List<Team> winningTeams = getWinningTeamsFromLastRound(tournamentId, nextRoundNumber - 1);
+//    }
 }
