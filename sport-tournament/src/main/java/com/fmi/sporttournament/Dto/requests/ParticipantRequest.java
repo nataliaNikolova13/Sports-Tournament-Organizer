@@ -1,11 +1,11 @@
 package com.fmi.sporttournament.Dto.requests;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 @Data
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class ParticipantRequest {
-    private final Long userId;
-    private final Long teamId;
+    private Long userId;
+    private Long teamId;
 }

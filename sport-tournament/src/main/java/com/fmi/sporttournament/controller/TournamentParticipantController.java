@@ -27,7 +27,7 @@ public class TournamentParticipantController {
     private final TournamentParticipantService tournamentParticipantService;
     private final TournamentParticipantMapper tournamentParticipantMapper;
 
-    @PostMapping("/add-team")
+    @PostMapping
     public ResponseEntity<TournamentParticipantResponse> addTeamToTournament(@RequestBody
                                                                              TournamentParticipantRequest tournamentParticipantRequest) {
         try {
@@ -35,26 +35,24 @@ public class TournamentParticipantController {
                 tournamentParticipantRequest);
             return ResponseEntity.ok(
                 tournamentParticipantMapper.tournamentParticipantToResponse(tournamentParticipant));
-        } catch (IllegalStateException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-
     }
 
-    @DeleteMapping("/remove-team")
-    public ResponseEntity<TournamentParticipantResponse> removeParticipantFromTeam(@RequestBody
-                                                                                   TournamentParticipantRequest tournamentParticipantRequest) {
+    @DeleteMapping
+    public ResponseEntity<Void> deleteParticipantFromTeam(
+        @RequestBody TournamentParticipantRequest tournamentParticipantRequest) {
         try {
-            TournamentParticipant tournamentParticipant = tournamentParticipantService.removeParticipantFromTeam(
+            TournamentParticipant tournamentParticipant = tournamentParticipantService.deleteParticipantFromTeam(
                 tournamentParticipantRequest);
-            return ResponseEntity.ok(
-                tournamentParticipantMapper.tournamentParticipantToResponse(tournamentParticipant));
-        } catch (IllegalStateException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 }

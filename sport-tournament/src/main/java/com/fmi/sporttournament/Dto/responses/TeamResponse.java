@@ -1,11 +1,11 @@
 package com.fmi.sporttournament.Dto.responses;
 
 import com.fmi.sporttournament.entity.enums.TeamCategory;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 @Data
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class TeamResponse {
     private String name;
     private TeamCategory category;

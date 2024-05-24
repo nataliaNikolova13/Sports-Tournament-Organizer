@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -36,8 +35,8 @@ public class VenueController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> removeVenue(@PathVariable Long id) {
-        venueService.removeVenue(id);
+    public ResponseEntity<Void> deleteVenue(@PathVariable Long id) {
+        venueService.deleteVenueById(id);
         return ResponseEntity.ok().build();
     }
 }

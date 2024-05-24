@@ -1,16 +1,16 @@
 package com.fmi.sporttournament.Dto.requests.tournament;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 import java.util.Date;
 
 @Data
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class TournamentRegistrationRequest {
-    private final String tournamentName;
-    private final String sportType;
-    private final String locationName;
-    private final Date startAt;
-    private final Date endAt;
+    private String tournamentName;
+    private String sportType;
+    private String locationName;
+    private Date startAt;
+    private Date endAt;
 }

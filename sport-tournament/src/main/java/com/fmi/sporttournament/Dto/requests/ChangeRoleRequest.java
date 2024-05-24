@@ -1,11 +1,11 @@
 package com.fmi.sporttournament.Dto.requests;
 
 import com.fmi.sporttournament.entity.enums.Role;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 @Data
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class ChangeRoleRequest {
-    private final Role role;
+    private Role role;
 }
