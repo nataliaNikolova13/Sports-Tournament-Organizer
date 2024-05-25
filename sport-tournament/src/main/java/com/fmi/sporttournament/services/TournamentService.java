@@ -208,6 +208,7 @@ public class TournamentService {
 
     public Tournament updateTournamentLocation(Tournament tournament, String newLocationName) {
         Location location = validateLocationNameExist(newLocationName);
+        validateLocationAvailabilityDates(tournament, location, tournament.getStartAt(), tournament.getEndAt());
         tournament.setLocation(location);
         return tournamentRepository.save(tournament);
     }
