@@ -9,9 +9,11 @@ const Navbar = () => {
         <li className="nav-item">
           <Link to="/home">Home</Link>
         </li>
-        <li className="nav-item">
-          <Link to="/login">Login</Link>
-        </li>
+        {!localStorage.getItem("token") && (
+          <li className="nav-item">
+            <Link to="/login">Login</Link>
+          </li>
+        )}
       </ul>
     </nav>
   );

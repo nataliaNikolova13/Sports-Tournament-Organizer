@@ -75,6 +75,8 @@ p {
 
 p.error {
   color: red;
+  text-align: left;
+  margin-top: 0px;
 }
 
 p.success {

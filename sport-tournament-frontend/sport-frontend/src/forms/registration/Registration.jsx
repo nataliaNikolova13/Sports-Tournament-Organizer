@@ -13,6 +13,7 @@ const RegistrationForm = () => {
 
   const [errors, setErrors] = useState({});
   const [registrationError, setRegistrationError] = useState("");
+  const [redirectToHome, setRedirectToHome] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,6 +48,7 @@ const RegistrationForm = () => {
         );
         console.log("Form Data Submitted", response.data);
         localStorage.setItem("token", response.data.token);
+        setRegistrationError(true);
         clear();
       } catch (error) {
         setRegistrationError(
@@ -61,6 +63,10 @@ const RegistrationForm = () => {
     setErrors({});
     setRegistrationError("");
   };
+
+  if (redirectToHome) {
+    return (window.location.href = "/");
+  }
 
   return (
     <div className="container">

@@ -12,6 +12,7 @@ const LoginForm = () => {
 
   const [errors, setErrors] = useState({});
   const [loginError, setLoginError] = useState("");
+  const [redirectToHome, setRedirectToHome] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -46,6 +47,9 @@ const LoginForm = () => {
         console.log("Form Data Submitted", response.data);
         localStorage.setItem("token", response.data.token);
         clear();
+        setRedirectToHome(true);
+        // history.push("/");
+        console.log("Redirected to Home");
       } catch (error) {
         setLoginError("No such user");
       }
@@ -57,6 +61,10 @@ const LoginForm = () => {
     setErrors({});
     setLoginError("");
   };
+
+  if (redirectToHome) {
+    return (window.location.href = "/"); // Redirect to home page
+  }
 
   return (
     <div className="container">
