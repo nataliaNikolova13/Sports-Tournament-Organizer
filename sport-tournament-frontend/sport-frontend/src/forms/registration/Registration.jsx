@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import "./Registration.css";
 
 const RegistrationForm = () => {
   const initialFormState = {
@@ -62,7 +63,7 @@ const RegistrationForm = () => {
   };
 
   return (
-    <div>
+    <div className="container">
       <h2>Registration Form</h2>
       <form onSubmit={handleSubmit}>
         <div>
@@ -73,7 +74,7 @@ const RegistrationForm = () => {
             value={formData.fullName}
             onChange={handleChange}
           />
-          {errors.name && <p style={{ color: "red" }}>{errors.name}</p>}
+          {errors.name && <p className="error">{errors.name}</p>}
         </div>
         <div>
           <label>Email:</label>
@@ -83,7 +84,7 @@ const RegistrationForm = () => {
             value={formData.email}
             onChange={handleChange}
           />
-          {errors.email && <p style={{ color: "red" }}>{errors.email}</p>}
+          {errors.email && <p className="error">{errors.email}</p>}
         </div>
         <div>
           <label>Password:</label>
@@ -93,12 +94,10 @@ const RegistrationForm = () => {
             value={formData.password}
             onChange={handleChange}
           />
-          {errors.password && <p style={{ color: "red" }}>{errors.password}</p>}
+          {errors.password && <p className="error">{errors.password}</p>}
         </div>
         <button type="submit">Register</button>
-        {registrationError && (
-          <p style={{ color: "red" }}>{registrationError}</p>
-        )}
+        {registrationError && <p className="error">{registrationError}</p>}
       </form>
     </div>
   );
