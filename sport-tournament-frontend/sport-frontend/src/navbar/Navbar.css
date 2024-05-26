@@ -30,3 +30,9 @@
   color: #fff;
   text-decoration: none;
 }
+
+.logout {
+  background-color: transparent;
+  margin: 0px;
+  padding: 0px;
+}
