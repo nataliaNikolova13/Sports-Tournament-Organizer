@@ -66,7 +66,7 @@ const RegistrationForm = () => {
     <div className="container">
       <h2>Registration Form</h2>
       <form onSubmit={handleSubmit}>
-        <div>
+        <div className="input-group">
           <label>Name:</label>
           <input
             type="text"

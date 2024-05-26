@@ -5,10 +5,12 @@ import "./App.css";
 import RegistrationForm from "./forms/registration/Registration";
 import LoginForm from "./forms/login/Login";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import Navbar from "./navbar/Navbar";
 
 function App() {
   return (
     <Router>
+      <Navbar />
       <Routes>
         <Route path="/login" element={<LoginForm></LoginForm>}></Route>
         <Route
