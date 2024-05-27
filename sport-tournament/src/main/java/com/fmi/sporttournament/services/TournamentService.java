@@ -97,12 +97,12 @@ public class TournamentService {
         return tournamentRepository.save(tournament);
     }
 
-    public void startTournament(Long tournamentId) {
-        Tournament tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
-        List<Team> teams = teamRepository.findTeamsByTournamentId(tournamentId);
-        Collections.shuffle(teams);
-    }
+//    public void startTournament(Long tournamentId) {
+//        Tournament tournament = tournamentRepository.findById(tournamentId)
+//                .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
+//        List<Team> teams = teamRepository.findTeamsByTournamentId(tournamentId);
+//        Collections.shuffle(teams);
+//    }
 
 //    public void processNextRound(Long tournamentId) {
 //        Tournament tournament = tournamentRepository.findById(tournamentId)
