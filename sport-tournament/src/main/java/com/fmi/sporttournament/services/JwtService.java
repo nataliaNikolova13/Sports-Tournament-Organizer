@@ -1,5 +1,6 @@
 package com.fmi.sporttournament.services;
 
+import com.fmi.sporttournament.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -38,6 +39,10 @@ public class JwtService {
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+        if (userDetails instanceof User user) {
+            Long userId = user.getId();
+            extraClaims.put("userid", userId);
+        }
         claims.put("role", userDetails.getAuthorities().toString());
         claims.putAll(extraClaims);
         return buildToken(claims, userDetails, jwtExpiration);
