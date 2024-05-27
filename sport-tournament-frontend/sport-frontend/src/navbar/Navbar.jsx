@@ -1,13 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Navbar.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
-  const [loggedIn, setLoggedIn] = useState(localStorage.getItem("token"));
+  const [loggedIn, setLoggedIn] = useState(false);
+  const navigate = useNavigate();
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     setLoggedIn(false);
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setLoggedIn(true);
+      navigate("/");
+    } else {
+      setLoggedIn(false);
+    }
+  }, [localStorage.getItem("token")]);
+
   return (
     <nav className="navbar">
       <ul className="navbar-nav">

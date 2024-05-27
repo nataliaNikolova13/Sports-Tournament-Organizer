@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./Login.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const LoginForm = () => {
   const initialFormState = {
@@ -12,7 +12,17 @@ const LoginForm = () => {
 
   const [errors, setErrors] = useState({});
   const [loginError, setLoginError] = useState("");
-  const [redirectToHome, setRedirectToHome] = useState(false);
+  const [isLogged, setIsLogged] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsLogged(true);
+    } else {
+      setIsLogged(false);
+    }
+  }, [localStorage.getItem("token")]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,9 +57,8 @@ const LoginForm = () => {
         console.log("Form Data Submitted", response.data);
         localStorage.setItem("token", response.data.token);
         clear();
-        setRedirectToHome(true);
-        // history.push("/");
-        console.log("Redirected to Home");
+        setIsLogged(true);
+        navigate("/");
       } catch (error) {
         setLoginError("No such user");
       }
@@ -62,38 +71,40 @@ const LoginForm = () => {
     setLoginError("");
   };
 
-  if (redirectToHome) {
-    return (window.location.href = "/"); // Redirect to home page
-  }
-
   return (
     <div className="container">
-      <h2>Login Form</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Email:</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-          />
-          {errors.email && <p className="error">{errors.email}</p>}
-        </div>
-        <div>
-          <label>Password:</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-          />
-          {errors.password && <p className="error">{errors.password}</p>}
-        </div>
-        <button type="submit">Login</button>
-        {loginError && <p className="error">{loginError}</p>}
-        <Link to="/registration">Register</Link>
-      </form>
+      {isLogged ? (
+        <h2>Welcome to Sports Tournament</h2>
+      ) : (
+        <>
+          <h2>Login Form</h2>
+          <form onSubmit={handleSubmit}>
+            <div>
+              <label>Email:</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+              />
+              {errors.email && <p className="error">{errors.email}</p>}
+            </div>
+            <div>
+              <label>Password:</label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+              />
+              {errors.password && <p className="error">{errors.password}</p>}
+            </div>
+            <button type="submit">Login</button>
+            {loginError && <p className="error">{loginError}</p>}
+            <Link to="/registration">Register</Link>
+          </form>
+        </>
+      )}
     </div>
   );
 };
