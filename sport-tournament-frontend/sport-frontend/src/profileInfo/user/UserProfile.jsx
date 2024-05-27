@@ -42,7 +42,7 @@ const UserProfile = ({ decodeToken }) => {
       </div>
       <div className="user-profile-detail">
         <label>Name:</label>
-        <p>{user.name}</p>
+        <p>{user.fullName}</p>
       </div>
       <div className="user-profile-detail">
         <label>Email:</label>
@@ -51,6 +51,10 @@ const UserProfile = ({ decodeToken }) => {
       <div className="user-profile-detail">
         <label>Role:</label>
         <p>{user.role}</p>
+      </div>
+      <div className="buttons">
+        <button className="edit-button">Edit</button>
+        <button className="delete-button">Delete</button>
       </div>
     </div>
   );

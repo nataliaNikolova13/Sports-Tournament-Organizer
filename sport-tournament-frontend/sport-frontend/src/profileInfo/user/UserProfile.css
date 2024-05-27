@@ -1,5 +1,6 @@
 .user-profile-container {
   max-width: 600px;
+  min-width: 300px;
   margin: 0 auto;
   padding: 60px;
   border: 1px solid #ddd;
@@ -10,7 +11,7 @@
 
 .user-profile-header {
   text-align: left;
-  margin-bottom: 20px;
+  margin-bottom: 40px;
 }
 
 .user-profile-header h2 {
@@ -43,4 +44,43 @@
   text-align: left;
   font-size: 18px;
   color: #555;
+}
+
+p {
+  text-align: left;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.edit-button {
+  background-color: #4caf50;
+  color: white;
+  width: 40%;
+}
+
+.edit-button:hover {
+  background-color: #45a049;
+}
+
+.delete-button {
+  background-color: #f44336;
+  color: white;
+  width: 40%;
+}
+
+.delete-button:hover {
+  background-color: #e53935;
 }
