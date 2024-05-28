@@ -6,6 +6,7 @@ import com.fmi.sporttournament.entity.Participant;
 import com.fmi.sporttournament.entity.Team;
 import com.fmi.sporttournament.entity.User;
 
+import com.fmi.sporttournament.entity.enums.TeamCategory;
 import com.fmi.sporttournament.mapper.TeamMapper;
 
 import com.fmi.sporttournament.repositories.TeamRepository;
@@ -13,6 +14,9 @@ import com.fmi.sporttournament.repositories.TeamRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.List;
 
 
 @Service
@@ -34,6 +38,10 @@ public class TeamService {
         User currentUser = userService.getCurrentUser();
         Participant participant = participantService.create(currentUser, team);
         return teamRepository.save(team);
+    }
+
+    public List<TeamCategory> getTeamCategories() {
+        return Arrays.asList(TeamCategory.values());
     }
 
 //    public Optional<Team> getById(Long id){

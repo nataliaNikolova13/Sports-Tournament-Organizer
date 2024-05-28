@@ -8,6 +8,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import Navbar from "./navbar/Navbar";
 import UserProfile from "./profileInfo/user/UserProfile";
 import { jwtDecode } from "jwt-decode";
+import TeamPage from "./pages/team/TeamPage";
 
 function App() {
   const decodeToken = () => {
@@ -31,6 +32,10 @@ function App() {
         <Route
           path="/profile"
           element={<UserProfile decodeToken={decodeToken}></UserProfile>}
+        ></Route>
+        <Route
+          path="/team"
+          element={<TeamPage decodeToken={decodeToken}></TeamPage>}
         ></Route>
       </Routes>
     </Router>
