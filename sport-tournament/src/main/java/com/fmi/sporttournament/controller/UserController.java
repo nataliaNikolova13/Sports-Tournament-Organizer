@@ -1,7 +1,10 @@
 package com.fmi.sporttournament.controller;
 
+import com.fmi.sporttournament.Dto.requests.EmailRequestAllUsers;
+import com.fmi.sporttournament.Dto.requests.EmailRequestOneUser;
 import com.fmi.sporttournament.Dto.UserDto;
 import com.fmi.sporttournament.Dto.requests.ChangeRoleRequest;
+import com.fmi.sporttournament.Dto.responses.EmailResponse;
 import com.fmi.sporttournament.entity.User;
 import com.fmi.sporttournament.entity.enums.Role;
 import com.fmi.sporttournament.mapper.UserMapper;
@@ -54,9 +57,10 @@ public class UserController {
         userService.removeUser(id);
         return ResponseEntity.ok().build();
     }
-    
+
     @PutMapping("/role/{userId}")
-    public ResponseEntity<UserDto> updateUserRole(@PathVariable Long userId, @RequestBody ChangeRoleRequest changeRoleRequest) {
+    public ResponseEntity<UserDto> updateUserRole(@PathVariable Long userId,
+                                                  @RequestBody ChangeRoleRequest changeRoleRequest) {
         Optional<User> userOptional = userService.updateUserRole(userId, changeRoleRequest);
         if (userOptional.isPresent()) {
             User user = userOptional.get();
@@ -65,5 +69,4 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-
 }
