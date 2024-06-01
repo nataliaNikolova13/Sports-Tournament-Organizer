@@ -1,6 +1,7 @@
 package com.fmi.sporttournament.services;
 
 import com.fmi.sporttournament.Dto.requests.tournament.VenueRequest;
+
 import com.fmi.sporttournament.entity.Venue;
 
 import com.fmi.sporttournament.mapper.VenueMapper;
@@ -31,12 +32,21 @@ public class VenueService {
         return venueRepository.findByLocationLocationName(locationName);
     }
 
-    public void removeVenue(Long id) {
+    public Venue createVenue(VenueRequest venueRequest) {
+        Venue venue = venueMapper.requestToVenue(venueRequest);
+        return venueRepository.save(venue);
+    }
+
+    public void deleteVenueById(Long id) {
         venueRepository.deleteById(id);
     }
 
-    public Venue createVenue(VenueRequest venueRequest){
-        Venue venue = venueMapper.requestToVenue(venueRequest);
-        return venueRepository.save(venue);
+    public void deleteExcessVenues(String locationName, Long currentVenueCount, Long newVenueCount) {
+        if (currentVenueCount > newVenueCount) {
+            for (long i = newVenueCount + 1; i <= currentVenueCount; i++) {
+                System.out.println(i);
+                venueRepository.deleteByLocationLocationNameAndNumber(locationName, i);
+            }
+        }
     }
 }

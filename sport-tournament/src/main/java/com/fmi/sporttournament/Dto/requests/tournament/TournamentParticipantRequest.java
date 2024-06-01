@@ -1,11 +1,11 @@
 package com.fmi.sporttournament.Dto.requests.tournament;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 @Data
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class TournamentParticipantRequest {
-    private final String tournamentName;
-    private final String teamName;
+    private String tournamentName;
+    private String teamName;
 }

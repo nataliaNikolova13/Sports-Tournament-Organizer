@@ -1,12 +1,12 @@
 package com.fmi.sporttournament.Dto.requests;
 
 import com.fmi.sporttournament.entity.enums.TeamCategory;
-import jakarta.persistence.*;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 @Data
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class TeamRegistrationRequest {
     private String name;
     private TeamCategory category;

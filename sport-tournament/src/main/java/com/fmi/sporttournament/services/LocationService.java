@@ -9,6 +9,7 @@ import com.fmi.sporttournament.mapper.LocationMapper;
 
 import com.fmi.sporttournament.repositories.LocationRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
@@ -19,10 +20,51 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class LocationService {
-
     private final LocationRepository locationRepository;
     private final LocationMapper locationMapper;
     private final VenueService venueService;
+
+    private void validateLocationNameNotExist(String locationName) {
+        if (getLocationByName(locationName).isPresent()) {
+            throw new IllegalArgumentException("Location with the name " + locationName + " already exists");
+        }
+    }
+
+    private Location validateLocationIdExist(Long id) {
+        Optional<Location> location = getLocationById(id);
+        if (location.isEmpty()) {
+            throw new IllegalArgumentException("Location with this id " + id + " doesn't exist");
+        }
+        return location.get();
+    }
+
+    private Location validateLocationNameExist(String locationName) {
+        Optional<Location> location = getLocationByName(locationName);
+        if (location.isEmpty()) {
+            throw new IllegalArgumentException("Location with the name " + locationName + " doesn't exist");
+        }
+        return location.get();
+    }
+
+    private void validateVenueCount(Long venueCount) {
+        if (venueCount <= 0) {
+            throw new IllegalArgumentException("The count of the venues can't be negative or zero");
+        }
+    }
+
+    private void validateLocationNameIsNotBlank(String locationName) {
+        if (locationName.isBlank()) {
+            throw new IllegalArgumentException("Location name can't be blank");
+        }
+    }
+
+    public Long countVenuesByLocationId(Long locationId) {
+        return locationRepository.countVenuesByLocationId(locationId);
+    }
+
+    public Long countVenuesByLocationName(String locationName) {
+        return locationRepository.countVenuesByLocationName(locationName);
+    }
 
     public List<Location> getAllLocations() {
         return locationRepository.findAll();
@@ -36,20 +78,16 @@ public class LocationService {
         return locationRepository.findByLocationName(locationName);
     }
 
-    public void removeLocation(Long id) {
-        locationRepository.deleteById(id);
-    }
-
+    @Transactional
     public Location createLocation(LocationRequest locationRequest) {
         String locationName = locationRequest.getLocationName();
-
-        if(getLocationByName(locationName).isPresent()){
-            throw new IllegalArgumentException("Location with this name already exists");
-        }
+        validateLocationNameIsNotBlank(locationName);
+        validateLocationNameNotExist(locationName);
+        Long venueCount = locationRequest.getVenueCount();
+        validateVenueCount(venueCount);
 
         Location location = locationMapper.requestToLocation(locationRequest);
         location = locationRepository.save(location);
-        Long venueCount = locationRequest.getVenueCount();
 
         for (int i = 0; i < venueCount; i++) {
             VenueRequest venueRequest = new VenueRequest(location, (long) i + 1);
@@ -59,8 +97,87 @@ public class LocationService {
         return location;
     }
 
-    public void removeByLocationName(String locationName) {
-        Optional<Location> location = locationRepository.findByLocationName(locationName);
-        location.ifPresent(value -> removeLocation(value.getId()));
+    public void deleteLocation(Long id) {
+        validateLocationIdExist(id);
+        locationRepository.deleteById(id);
+    }
+
+    public void deleteByLocationName(String locationName) {
+        Location location = validateLocationNameExist(locationName);
+        locationRepository.deleteById(location.getId());
+    }
+
+    @Transactional
+    public Location updateLocation(Long id, LocationRequest locationRequest) {
+        Location location = validateLocationIdExist(id);
+
+        String locationName = locationRequest.getLocationName();
+        validateLocationNameIsNotBlank(locationName);
+
+        if (!location.getLocationName().equals(locationName)) {
+            validateLocationNameNotExist(locationName);
+        }
+        location.setLocationName(locationName);
+
+        locationRepository.save(location);
+
+        return updateVenueCountByLocationName(locationName, locationRequest.getVenueCount());
+    }
+
+    public Location updateLocationNameById(Long id, String newLocationName) {
+        Location location = validateLocationIdExist(id);
+        validateLocationNameIsNotBlank(newLocationName);
+
+        if (!location.getLocationName().equals(newLocationName)) {
+            validateLocationNameNotExist(newLocationName);
+        }
+
+        location.setLocationName(newLocationName);
+        return locationRepository.save(location);
+    }
+
+    public Location updateLocationNameByLocationName(String currentLocationName, String newLocationName) {
+        Location location = validateLocationNameExist(currentLocationName);
+        validateLocationNameIsNotBlank(newLocationName);
+
+        if (!location.getLocationName().equals(newLocationName)) {
+            validateLocationNameNotExist(newLocationName);
+        }
+
+        location.setLocationName(newLocationName);
+        return locationRepository.save(location);
+    }
+
+    public Location updateVenueCountById(Long id, Long newVenueCount) {
+        Location location = validateLocationIdExist(id);
+
+        Long currentVenueCount = countVenuesByLocationId(location.getId());
+
+        if (newVenueCount > currentVenueCount) {
+            for (long i = currentVenueCount + 1; i <= newVenueCount; i++) {
+                VenueRequest venueRequest = new VenueRequest(location, i);
+                venueService.createVenue(venueRequest);
+            }
+        } else if (newVenueCount < currentVenueCount) {
+            venueService.deleteExcessVenues(location.getLocationName(), currentVenueCount, newVenueCount);
+        }
+        return locationRepository.save(location);
+    }
+
+
+    public Location updateVenueCountByLocationName(String locationName, Long newVenueCount) {
+        Location location = validateLocationNameExist(locationName);
+
+        Long currentVenueCount = countVenuesByLocationId(location.getId());
+
+        if (newVenueCount > currentVenueCount) {
+            for (long i = currentVenueCount + 1; i <= newVenueCount; i++) {
+                VenueRequest venueRequest = new VenueRequest(location, i);
+                venueService.createVenue(venueRequest);
+            }
+        } else if (newVenueCount < currentVenueCount) {
+            venueService.deleteExcessVenues(locationName, currentVenueCount, newVenueCount);
+        }
+        return locationRepository.save(location);
     }
 }

@@ -1,11 +1,11 @@
 package com.fmi.sporttournament.Dto.requests.tournament;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 @Data
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class LocationRequest {
-    private final String locationName;
-    private final Long venueCount;
+    private String locationName;
+    private Long venueCount;
 }
