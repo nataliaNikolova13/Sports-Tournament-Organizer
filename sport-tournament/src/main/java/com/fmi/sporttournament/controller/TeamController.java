@@ -4,15 +4,16 @@ import com.fmi.sporttournament.Dto.requests.TeamRegistrationRequest;
 import com.fmi.sporttournament.Dto.responses.TeamResponse;
 import com.fmi.sporttournament.entity.Team;
 import com.fmi.sporttournament.entity.Tournament;
+import com.fmi.sporttournament.entity.enums.TeamCategory;
 import com.fmi.sporttournament.mapper.TeamMapper;
 import com.fmi.sporttournament.services.TeamService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,4 +32,11 @@ public class TeamController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
+    @GetMapping("/categories")
+    public ResponseEntity<List<TeamCategory>> getTeamCategories() {
+        List<TeamCategory> categories = teamService.getTeamCategories();
+        return ResponseEntity.ok(categories);
+    }
+
 }

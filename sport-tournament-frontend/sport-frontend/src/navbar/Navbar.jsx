@@ -38,6 +38,9 @@ const Navbar = () => {
               <Link to="/profile">User Profile</Link>
             </li>
             <li className="nav-item">
+              <Link to="/team">My Teams</Link>
+            </li>
+            <li className="nav-item">
               <button className="logout" onClick={handleLogout}>
                 Logout
               </button>
