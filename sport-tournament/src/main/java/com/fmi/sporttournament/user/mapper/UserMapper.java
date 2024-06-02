@@ -1,6 +1,6 @@
 package com.fmi.sporttournament.user.mapper;
 
-import com.fmi.sporttournament.user.dto.request.UserDto;
+import com.fmi.sporttournament.user.dto.response.UserDto;
 import com.fmi.sporttournament.user.entity.User;
 import org.mapstruct.Mapper;
 

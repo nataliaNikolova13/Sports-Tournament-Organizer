@@ -1,4 +1,4 @@
-package com.fmi.sporttournament.user.dto.request;
+package com.fmi.sporttournament.user.dto.response;
 
 import com.fmi.sporttournament.user.entity.role.Role;
 import lombok.AllArgsConstructor;
