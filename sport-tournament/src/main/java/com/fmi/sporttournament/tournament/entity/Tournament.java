@@ -44,4 +44,16 @@ public class Tournament {
 
     @Column(name = "end_at", nullable = false)
     private Date endAt;
+
+    @Column(name = "start_hour", nullable = false)
+    private Integer startHour;
+
+    @Column(name = "end_hour", nullable = false)
+    private Integer endHour;
+
+    @Column(name = "team_count", nullable = false)
+    private Integer teamCount;
+
+    @Column(name = "match_duration", nullable = false)
+    private Integer matchDuration;
 }

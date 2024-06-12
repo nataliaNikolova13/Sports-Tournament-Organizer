@@ -1,6 +1,7 @@
 package com.fmi.sporttournament.tournament.controller;
 
 import com.fmi.sporttournament.tournament.dto.request.DateRequest;
+import com.fmi.sporttournament.tournament.dto.request.HourRequest;
 import com.fmi.sporttournament.tournament.dto.request.TournamentRegistrationRequest;
 
 import com.fmi.sporttournament.tournament.dto.response.TournamentResponse;
@@ -167,8 +168,7 @@ public class TournamentController {
     @PatchMapping("/{id}/sport")
     public ResponseEntity<TournamentResponse> updateTournamentSportTypeById(@PathVariable Long id,
                                                                             @RequestParam(name = "new-sport-type")
-                                                                            String newSportType
-    ) {
+                                                                            String newSportType) {
         try {
             Tournament updatedTournament = tournamentService.updateTournamentSportTypeById(id, newSportType);
             return ResponseEntity.ok(tournamentMapper.tournamentToResponse(updatedTournament));
@@ -213,12 +213,98 @@ public class TournamentController {
 
     @PatchMapping("/name/{tournamentName}/dates")
     public ResponseEntity<TournamentResponse> updateTournamentDatesByTournamentName(@PathVariable String tournamentName,
-                                                                                    @RequestBody DateRequest dateRequest) {
+                                                                                    @RequestBody
+                                                                                    DateRequest dateRequest) {
         try {
             Date newStartAt = dateRequest.getStartAt();
             Date newEndAt = dateRequest.getEndAt();
             Tournament updatedTournament =
                 tournamentService.updateTournamentDatesByTournamentName(tournamentName, newStartAt, newEndAt);
+            return ResponseEntity.ok(tournamentMapper.tournamentToResponse(updatedTournament));
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PatchMapping("/{id}/match-duration")
+    public ResponseEntity<TournamentResponse> updateTournamentMatchDurationById(
+        @PathVariable Long id, @RequestParam(name = "new-match-duration") Integer newMatchDuration) {
+        try {
+            Tournament updatedTournament = tournamentService.updateTournamentMatchDurationById(id, newMatchDuration);
+            return ResponseEntity.ok(tournamentMapper.tournamentToResponse(updatedTournament));
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PatchMapping("/name/{tournamentName}/match-duration")
+    public ResponseEntity<TournamentResponse> updateTournamentMatchDurationByTournamentName(
+        @PathVariable String tournamentName, @RequestParam(name = "new-match-duration") Integer newMatchDuration) {
+        try {
+            Tournament updatedTournament =
+                tournamentService.updateTournamentMatchDurationByTournamentName(tournamentName, newMatchDuration);
+            return ResponseEntity.ok(tournamentMapper.tournamentToResponse(updatedTournament));
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PatchMapping("/{id}/hours")
+    public ResponseEntity<TournamentResponse> updateTournamentHoursById(
+        @PathVariable Long id, @RequestBody HourRequest hourRequest) {
+        try {
+            Integer newStartHour = hourRequest.getStartHour();
+            Integer newEndHour = hourRequest.getEndHour();
+            Tournament updatedTournament = tournamentService.updateTournamentHoursById(id, newStartHour, newEndHour);
+            return ResponseEntity.ok(tournamentMapper.tournamentToResponse(updatedTournament));
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PatchMapping("/name/{tournamentName}/hours")
+    public ResponseEntity<TournamentResponse> updateTournamentHoursByTournamentName(
+        @PathVariable String tournamentName, @RequestBody HourRequest hourRequest) {
+        try {
+            Integer newStartHour = hourRequest.getStartHour();
+            Integer newEndHour = hourRequest.getEndHour();
+            Tournament updatedTournament =
+                tournamentService.updateTournamentHoursByTournamentName(tournamentName, newStartHour, newEndHour);
+            return ResponseEntity.ok(tournamentMapper.tournamentToResponse(updatedTournament));
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PatchMapping("/{id}/team-count")
+    public ResponseEntity<TournamentResponse> updateTournamentTeamCountById(
+        @PathVariable Long id, @RequestParam(name = "new-team-count") Integer newTeamCount) {
+        try {
+            Tournament updatedTournament = tournamentService.updateTournamentTeamCountById(id, newTeamCount);
+            return ResponseEntity.ok(tournamentMapper.tournamentToResponse(updatedTournament));
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PutMapping("/name/{tournamentName}/team-count")
+    public ResponseEntity<TournamentResponse> updateTournamentTeamCountByTournamentName(
+        @PathVariable String tournamentName, @RequestParam(name = "new-team-count") Integer newTeamCount) {
+        try {
+            Tournament updatedTournament =
+                tournamentService.updateTournamentTeamCountByTournamentName(tournamentName, newTeamCount);
             return ResponseEntity.ok(tournamentMapper.tournamentToResponse(updatedTournament));
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
