@@ -37,10 +37,10 @@ public class VenueService {
         return venueRepository.save(venue);
     }
 
-    public void deleteVenueById(Long id) {
+  /*  public void deleteVenueById(Long id) {
         venueRepository.deleteById(id);
     }
-
+*/
     public void deleteExcessVenues(String locationName, Long currentVenueCount, Long newVenueCount) {
         if (currentVenueCount > newVenueCount) {
             for (long i = newVenueCount + 1; i <= currentVenueCount; i++) {

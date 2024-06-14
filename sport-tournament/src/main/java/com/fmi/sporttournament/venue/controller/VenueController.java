@@ -34,9 +34,9 @@ public class VenueController {
             .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @DeleteMapping("/{id}")
+  /*  @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteVenue(@PathVariable Long id) {
         venueService.deleteVenueById(id);
         return ResponseEntity.ok().build();
-    }
+    }*/
 }

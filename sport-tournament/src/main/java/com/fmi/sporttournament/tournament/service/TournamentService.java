@@ -243,12 +243,14 @@ public class TournamentService {
 //    }
 
     public void deleteTournamentById(Long id) {
-        validateTournamentIdExist(id);
+        Tournament tournament = validateTournamentIdExist(id);
+        validateRequestDates(tournament.getStartAt(), tournament.getEndAt());
         tournamentRepository.deleteById(id);
     }
 
     public void deleteTournamentByTournamentName(String tournamentName) {
         Tournament tournament = validateTournamentNameExist(tournamentName);
+        validateRequestDates(tournament.getStartAt(), tournament.getEndAt());
         tournamentRepository.deleteById(tournament.getId());
     }
 

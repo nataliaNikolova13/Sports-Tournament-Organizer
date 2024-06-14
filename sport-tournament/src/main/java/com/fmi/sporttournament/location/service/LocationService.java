@@ -107,12 +107,14 @@ public class LocationService {
     }
 
     public void deleteLocation(Long id) {
-        validateLocationIdExist(id);
+        Location location = validateLocationIdExist(id);
+        validateLocationIsNotUsedInTournament(location);
         locationRepository.deleteById(id);
     }
 
     public void deleteByLocationName(String locationName) {
         Location location = validateLocationNameExist(locationName);
+        validateLocationIsNotUsedInTournament(location);
         locationRepository.deleteById(location.getId());
     }
 
