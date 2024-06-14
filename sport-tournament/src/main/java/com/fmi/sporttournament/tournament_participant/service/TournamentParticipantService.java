@@ -16,6 +16,7 @@ import com.fmi.sporttournament.tournament.repository.TournamentRepository;
 import com.fmi.sporttournament.user.entity.User;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -219,5 +220,21 @@ public class TournamentParticipantService {
         validateDateOfRemoving(tournament);
 
         return removeTournamentParticipant(tournament, team);
+    }
+
+    @Scheduled(cron = "0 0 0 * * *")
+    public void updateParticipantsStatusAfterTournament() {
+        List<Tournament> endedTournaments = tournamentRepository.findByEndAtBefore(new Date());
+
+        for (Tournament tournament : endedTournaments) {
+            List<TournamentParticipant> participants = tournamentParticipantRepository.findByTournament(tournament);
+            for (TournamentParticipant participant : participants) {
+                if (participant.getStatus() == TournamentParticipantStatus.joined) {
+                    participant.setStatus(TournamentParticipantStatus.left);
+                    participant.setTimeStamp(new Date());
+                    tournamentParticipantRepository.save(participant);
+                }
+            }
+        }
     }
 }

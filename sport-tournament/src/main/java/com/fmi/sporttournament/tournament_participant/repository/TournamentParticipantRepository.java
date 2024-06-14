@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +22,8 @@ public interface TournamentParticipantRepository extends JpaRepository<Tournamen
     boolean existsByTournamentIdAndTeamIdAndStatus(Long tournamentId, Long teamId, TournamentParticipantStatus status);
 
     boolean existsByTournamentAndTeam(Tournament tournament, Team team);
+
+    List<TournamentParticipant> findByTournament(Tournament tournament);
 
     @Query("SELECT tp.team FROM TournamentParticipant tp WHERE tp.status = :status AND tp.tournament = :tournament ORDER BY tp.timeStamp ASC")
     List<Team> findAllTeamsByTournamentStatusAndTournament(TournamentParticipantStatus status, Tournament tournament);
