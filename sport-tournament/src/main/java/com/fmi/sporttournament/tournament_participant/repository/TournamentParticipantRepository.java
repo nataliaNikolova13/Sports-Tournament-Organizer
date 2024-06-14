@@ -8,6 +8,7 @@ import com.fmi.sporttournament.tournament_participant.entity.status.TournamentPa
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,4 +23,10 @@ public interface TournamentParticipantRepository extends JpaRepository<Tournamen
     boolean existsByTournamentAndTeam(Tournament tournament, Team team);
 
     List<Team> findByTournament(Tournament tournament);
+
+    @Query("SELECT tp.team FROM TournamentParticipant tp WHERE tp.status = :status ORDER BY tp.timeStamp ASC")
+    List<Team> findAllTeamsByTournamentStatus(TournamentParticipantStatus status);
+
+    @Query("SELECT DISTINCT tp.tournament FROM TournamentParticipant tp WHERE tp.team = :team AND tp.status = :status")
+    List<Tournament> findTournamentsByTeam(Team team, TournamentParticipantStatus status);
 }

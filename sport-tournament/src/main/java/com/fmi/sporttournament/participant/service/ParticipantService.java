@@ -4,6 +4,10 @@ import com.fmi.sporttournament.participant.dto.request.ParticipantRequest;
 
 import com.fmi.sporttournament.participant.entity.Participant;
 import com.fmi.sporttournament.team.entity.Team;
+
+import com.fmi.sporttournament.tournament_participant.entity.status.TournamentParticipantStatus;
+import com.fmi.sporttournament.tournament_participant.repository.TournamentParticipantRepository;
+
 import com.fmi.sporttournament.user.entity.User;
 import com.fmi.sporttournament.participant.entity.status.ParticipantStatus;
 
@@ -16,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -24,72 +29,102 @@ public class ParticipantService {
     private final ParticipantRepository participantRepository;
     private final UserRepositoty userRepositoty;
     private final TeamRepository teamRepository;
+    private final TournamentParticipantRepository tournamentParticipantRepository;
 
-    public Participant create(User user, Team team){
+    private void validateTeamNotParticipateInTournament(Team team) {
+        if (!tournamentParticipantRepository.findTournamentsByTeam(team, TournamentParticipantStatus.joined)
+            .isEmpty()) {
+            throw new IllegalArgumentException("The team already participate in tournament and it can't be modified");
+        }
+    }
+
+    private Participant validateUserInTeam(User user, Team team) {
+        Optional<Participant> existingParticipant = participantRepository.findByUserAndTeam(user, team);
+        if (existingParticipant.isEmpty()) {
+            throw new IllegalStateException("The user hasn't been a member of this team");
+        }
+        return existingParticipant.get();
+    }
+
+    private boolean checkIfOnlyOneUserLeftInTeam(Team team) {
+        return participantRepository.countParticipantsByTeamAndStatus(team, ParticipantStatus.joined) == 1;
+    }
+
+    public Participant create(User user, Team team) {
         Participant participant = new Participant();
+        validateTeamNotParticipateInTournament(team);
         participant.setUser(user);
         participant.setTeam(team);
         participant.setStatus(ParticipantStatus.joined);
         return participantRepository.save(participant);
     }
 
-    public Participant remove(User user, Team team){
-        Participant existintParticipant =
-            participantRepository.findByUser(user).get(participantRepository.findByUser(user).size() - 1);
-        existintParticipant.setStatus(ParticipantStatus.left);
-        existintParticipant.setTimeStamp(new Date());
-        return participantRepository.save(existintParticipant);
+    public Participant remove(User user, Team team) {
+        Participant existingParticipant = validateUserInTeam(user, team);
+        existingParticipant.setStatus(ParticipantStatus.left);
+        existingParticipant.setTimeStamp(new Date());
+
+        if (checkIfOnlyOneUserLeftInTeam(team)) {
+            teamRepository.deleteById(team.getId());
+        } else {
+            participantRepository.save(existingParticipant);
+        }
+        return existingParticipant;
     }
 
     public boolean isUserAlreadyInTeam(User user, Team team) {
-        return participantRepository.existsByUserIdAndTeamIdAndStatus(user.getId(), team.getId(), ParticipantStatus.joined);
+        return participantRepository.existsByUserIdAndTeamIdAndStatus(user.getId(), team.getId(),
+            ParticipantStatus.joined);
     }
 
-    public boolean userAlreadyLeft(User user, Team team){
-        return participantRepository.existsByUserIdAndTeamIdAndStatus(user.getId(), team.getId(), ParticipantStatus.left);
+    public boolean userAlreadyLeft(User user, Team team) {
+        return participantRepository.existsByUserIdAndTeamIdAndStatus(user.getId(), team.getId(),
+            ParticipantStatus.left);
     }
 
     public Participant addParticipantToTeam(ParticipantRequest participantRequest) {
         Optional<User> user = userRepositoty.findById(participantRequest.getUserId());
-        if(!user.isPresent()){
+        if (!user.isPresent()) {
             throw new IllegalArgumentException("User not found");
         }
         Optional<Team> team = teamRepository.findById(participantRequest.getTeamId());
-        if(!team.isPresent()){
+        if (!team.isPresent()) {
             throw new IllegalArgumentException("Team not found");
         }
-        if(isUserAlreadyInTeam(user.get(), team.get())){
+        if (isUserAlreadyInTeam(user.get(), team.get())) {
             throw new IllegalStateException("User is already a participant of the team");
         }
-        if(userAlreadyLeft(user.get(), team.get())){
+
+        validateTeamNotParticipateInTournament(team.get());
+        if (userAlreadyLeft(user.get(), team.get())) {
             return rejoinTeam(user.get(), team.get());
         }
         return create(user.get(), team.get());
     }
 
-    public Participant removeParticipantFromTeam(ParticipantRequest participantRequest){
+    public Participant removeParticipantFromTeam(ParticipantRequest participantRequest) {
         Optional<User> user = userRepositoty.findById(participantRequest.getUserId());
-        if(!user.isPresent()){
+        if (!user.isPresent()) {
             throw new IllegalArgumentException("User not found");
         }
         Optional<Team> team = teamRepository.findById(participantRequest.getTeamId());
-        if(!team.isPresent()){
+        if (!team.isPresent()) {
             throw new IllegalArgumentException("Team not found");
         }
-        if(!participantRepository.existsByUserAndTeam(user.get(), team.get())){
+        if (!participantRepository.existsByUserAndTeam(user.get(), team.get())) {
             throw new IllegalStateException("User is not a member of the team");
         }
-        if(userAlreadyLeft(user.get(), team.get())){
+        if (userAlreadyLeft(user.get(), team.get())) {
             throw new IllegalStateException("User has already left the team");
         }
-
+        validateTeamNotParticipateInTournament(team.get());
         return remove(user.get(), team.get());
     }
 
-    public Participant rejoinTeam(User user, Team team){
-        Participant existintParticipant = participantRepository.findByUser(user).get(participantRepository.findByUser(user).size() - 1);
-        existintParticipant.setStatus(ParticipantStatus.joined);
-        existintParticipant.setTimeStamp(new Date());
-        return participantRepository.save(existintParticipant);
+    public Participant rejoinTeam(User user, Team team) {
+        Participant existingParticipant = validateUserInTeam(user, team);
+        existingParticipant.setStatus(ParticipantStatus.joined);
+        existingParticipant.setTimeStamp(new Date());
+        return participantRepository.save(existingParticipant);
     }
 }

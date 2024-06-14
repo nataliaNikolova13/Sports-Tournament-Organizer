@@ -3,5 +3,5 @@ CREATE TABLE rounds (
     tournament_id BIGINT NOT NULL,
     round_number INT NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (tournament_id) REFERENCES tournaments(id)
+    FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE
 );

@@ -5,6 +5,11 @@ CREATE TABLE tournaments (
     location_id BIGINT NOT NULL,
     start_at TIMESTAMP NOT NULL,
     end_at TIMESTAMP NOT NULL,
+    start_hour INT NOT NULL,
+    end_hour INT NOT NULL,
+    team_count INT NOT NULL,
+    match_duration INT NOT NULL,
+    team_members_count INT NOT NULL,
 	PRIMARY KEY (id),
     FOREIGN KEY (location_id) REFERENCES locations(id) ON DELETE CASCADE,
     CONSTRAINT UK_tournament_name UNIQUE (tournament_name)

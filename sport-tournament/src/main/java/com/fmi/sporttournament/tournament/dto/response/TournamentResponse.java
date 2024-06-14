@@ -13,4 +13,9 @@ public class TournamentResponse {
     private Long locationId;
     private Date startAt;
     private Date endAt;
+    private Integer startHour;
+    private Integer endHour;
+    private Integer teamCount;
+    private Integer matchDuration;
+    private Integer teamMemberCount;
 }

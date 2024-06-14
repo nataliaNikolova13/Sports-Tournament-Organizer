@@ -98,7 +98,7 @@ public class TournamentController {
         try {
             Tournament updatedTournament = tournamentService.updateTournament(id, tournamentRegistrationRequest);
             return ResponseEntity.ok(tournamentMapper.tournamentToResponse(updatedTournament));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -204,9 +204,9 @@ public class TournamentController {
             Tournament tournament =
                 tournamentService.updateTournamentDatesById(id, newStartAt, newEndAt);
             return ResponseEntity.ok(tournamentMapper.tournamentToResponse(tournament));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException|IllegalStateException e){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
+        } catch(Exception e){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
@@ -221,7 +221,7 @@ public class TournamentController {
             Tournament updatedTournament =
                 tournamentService.updateTournamentDatesByTournamentName(tournamentName, newStartAt, newEndAt);
             return ResponseEntity.ok(tournamentMapper.tournamentToResponse(updatedTournament));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

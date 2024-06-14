@@ -18,7 +18,7 @@ public class MatchResult {
     @JoinColumn(name = "match_id", nullable = false)
     private Match match;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "winning_team_id", nullable = false)
     private Team winningTeam;
 

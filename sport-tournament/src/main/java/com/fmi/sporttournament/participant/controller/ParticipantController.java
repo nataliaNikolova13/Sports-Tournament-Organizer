@@ -22,7 +22,7 @@ public class ParticipantController {
         try{
             Participant participant = participantService.addParticipantToTeam(participantRequest);
             return ResponseEntity.ok(participantMapper.participantToResponse(participant));
-        } catch (IllegalStateException e) {
+        } catch (IllegalArgumentException| IllegalStateException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }catch (Exception e){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -35,7 +35,7 @@ public class ParticipantController {
         try{
             Participant participant = participantService.removeParticipantFromTeam(participantRequest);
             return ResponseEntity.ok(participantMapper.participantToResponse(participant));
-        }catch (IllegalStateException e) {
+        }catch (IllegalArgumentException| IllegalStateException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (Exception e){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

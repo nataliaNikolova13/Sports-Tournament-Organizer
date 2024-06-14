@@ -13,8 +13,9 @@ public class TournamentRegistrationRequest {
     private String locationName;
     private Date startAt;
     private Date endAt;
-    private int startHour;
-    private int endHour;
-    private int teamCount;
-    private int matchDuration;
+    private Integer startHour;
+    private Integer endHour;
+    private Integer teamCount;
+    private Integer matchDuration;
+    private Integer teamMemberCount;
 }

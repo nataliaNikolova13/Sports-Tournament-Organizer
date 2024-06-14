@@ -30,8 +30,6 @@ public class TournamentService {
     private final TournamentRepository tournamentRepository;
     private final TournamentMapper tournamentMapper;
     private final LocationRepository locationRepository;
-    private final TeamRepository teamRepository;
-    private final RoundRepository roundRepository;
 
     private void validateTournamentNameNotExist(String tournamentName) {
         if (getTournamentByTournamentName(tournamentName).isPresent()) {
@@ -76,6 +74,12 @@ public class TournamentService {
 
         if (startAt.toInstant().isBefore(Instant.now())) {
             throw new IllegalStateException("The start date can not be before today date");
+        }
+    }
+
+    private void validateDateOfUpdate(Date startAt) {
+        if (startAt.toInstant().isBefore(Instant.now())) {
+            throw new IllegalStateException("The tournament can't be changed during the competition");
         }
     }
 
@@ -152,6 +156,18 @@ public class TournamentService {
         }
     }
 
+    private void validateTeamMemberCount(Integer teamMemberCount) {
+        if (teamMemberCount <= 0) {
+            throw new IllegalArgumentException("The number of members of the teams can't be zero or less");
+        }
+    }
+
+    private void validateTeamMemberCountIsNotChanged(Tournament tournament, Integer teamMemberCount) {
+        if (teamMemberCount != tournament.getTeamMemberCount()) {
+            throw new IllegalArgumentException("The number of members of the teams can't be changed");
+        }
+    }
+
     public List<Tournament> getAllTournaments() {
         return tournamentRepository.findAll();
     }
@@ -201,9 +217,12 @@ public class TournamentService {
         validateVenuesAvailability(locationName, startAt, endAt, startHour,
             endHour, teamCount, matchDuration);
 
+        Integer teamMemberCount = tournamentRegistrationRequest.getTeamMemberCount();
+        validateTeamMemberCount(teamMemberCount);
+
         TournamentCreationRequest tournamentCreationRequest =
             new TournamentCreationRequest(tournamentName, sportType, location, startAt, endAt, startHour, endHour,
-                teamCount, matchDuration);
+                teamCount, matchDuration, teamMemberCount);
 
         Tournament tournament = tournamentMapper.requestToTournament(tournamentCreationRequest);
         return tournamentRepository.save(tournament);
@@ -236,7 +255,8 @@ public class TournamentService {
 
     private void setTournament(Tournament tournament, String tournamentName, String sportType, Location location,
                                Date startAt, Date endAt,
-                               Integer startHour, Integer endHour, Integer teamCount, Integer matchDuration) {
+                               Integer startHour, Integer endHour, Integer teamCount, Integer matchDuration,
+                               Integer teamMemberCount) {
         tournament.setTournamentName(tournamentName);
         tournament.setSportType(sportType);
         tournament.setLocation(location);
@@ -246,6 +266,7 @@ public class TournamentService {
         tournament.setEndHour(endHour);
         tournament.setTeamCount(teamCount);
         tournament.setMatchDuration(matchDuration);
+        tournament.setTeamMemberCount(teamMemberCount);
     }
 
     public Tournament updateTournament(Long id, TournamentRegistrationRequest tournamentRegistrationRequest) {
@@ -266,6 +287,7 @@ public class TournamentService {
         Date startAt = tournamentRegistrationRequest.getStartAt();
         Date endAt = tournamentRegistrationRequest.getEndAt();
         validateRequestDates(startAt, endAt);
+        validateDateOfUpdate(startAt);
 
         validateLocationAvailabilityDates(tournament, location, startAt, endAt);
 
@@ -282,36 +304,35 @@ public class TournamentService {
         validateVenuesAvailability(locationName, startAt, endAt, startHour,
             endHour, teamCount, matchDuration);
 
-        setTournament(tournament, tournamentName, sportType, location, startAt, endAt, startHour, endHour, teamCount,
-            matchDuration);
+        Integer teamMemberCount = tournamentRegistrationRequest.getTeamMemberCount();
+        validateTeamMemberCountIsNotChanged(tournament, teamMemberCount);
 
+        setTournament(tournament, tournamentName, sportType, location, startAt, endAt, startHour, endHour, teamCount,
+            matchDuration, teamMemberCount);
+
+        return tournamentRepository.save(tournament);
+    }
+
+    private Tournament updateTournamentName(Tournament tournament, String newTournamentName) {
+        validateTournamentNameIsNotBlank(newTournamentName);
+        validateDateOfUpdate(tournament.getStartAt());
+
+        if (!tournament.getTournamentName().equals(newTournamentName)) {
+            validateTournamentNameNotExist(newTournamentName);
+        }
+
+        tournament.setTournamentName(newTournamentName);
         return tournamentRepository.save(tournament);
     }
 
     public Tournament updateTournamentNameById(Long id, String newTournamentName) {
         Tournament tournament = validateTournamentIdExist(id);
-
-        validateTournamentNameIsNotBlank(newTournamentName);
-
-        if (!tournament.getTournamentName().equals(newTournamentName)) {
-            validateTournamentNameNotExist(newTournamentName);
-        }
-
-        tournament.setTournamentName(newTournamentName);
-        return tournamentRepository.save(tournament);
+        return updateTournamentName(tournament, newTournamentName);
     }
 
     public Tournament updateTournamentNameByTournamentName(String currentTournamentName, String newTournamentName) {
         Tournament tournament = validateTournamentNameExist(currentTournamentName);
-
-        validateTournamentNameIsNotBlank(newTournamentName);
-
-        if (!tournament.getTournamentName().equals(newTournamentName)) {
-            validateTournamentNameNotExist(newTournamentName);
-        }
-
-        tournament.setTournamentName(newTournamentName);
-        return tournamentRepository.save(tournament);
+        return updateTournamentName(tournament, newTournamentName);
     }
 
     private Tournament updateTournamentLocation(Tournament tournament, String newLocationName) {
@@ -321,6 +342,7 @@ public class TournamentService {
         Date endAt = tournament.getEndAt();
 
         validateLocationAvailabilityDates(tournament, location, startAt, endAt);
+        validateDateOfUpdate(startAt);
 
         Integer startHour = tournament.getStartHour();
         Integer endHour = tournament.getEndHour();
@@ -346,17 +368,20 @@ public class TournamentService {
 
     public Tournament updateTournamentSportTypeById(Long id, String newSportType) {
         Tournament tournament = validateTournamentIdExist(id);
+        validateDateOfUpdate(tournament.getStartAt());
         tournament.setSportType(newSportType);
         return tournamentRepository.save(tournament);
     }
 
     public Tournament updateTournamentSportTypeByTournamentName(String tournamentName, String newSportType) {
         Tournament tournament = validateTournamentNameExist(tournamentName);
+        validateDateOfUpdate(tournament.getStartAt());
         tournament.setSportType(newSportType);
         return tournamentRepository.save(tournament);
     }
 
     private Tournament updateTournamentDates(Tournament tournament, Date newStartAt, Date newEndAt) {
+        validateDateOfUpdate(tournament.getStartAt());
         validateRequestDates(newStartAt, newEndAt);
 
         Location location = tournament.getLocation();
@@ -387,8 +412,11 @@ public class TournamentService {
 
     private Tournament updateTournamentMatchDuration(Tournament tournament, Integer newMatchDuration) {
         String locationName = tournament.getLocation().getLocationName();
+
         Date startAt = tournament.getStartAt();
         Date endAt = tournament.getEndAt();
+        validateDateOfUpdate(startAt);
+
         Integer startHour = tournament.getStartHour();
         Integer endHour = tournament.getEndHour();
         Integer teamCount = tournament.getTeamCount();
@@ -413,8 +441,10 @@ public class TournamentService {
 
     private Tournament updateTournamentHours(Tournament tournament, Integer newStartHour, Integer newEndHour) {
         String locationName = tournament.getLocation().getLocationName();
+
         Date startAt = tournament.getStartAt();
         Date endAt = tournament.getEndAt();
+        validateDateOfUpdate(startAt);
 
         validateHours(newStartHour, newEndHour);
 
@@ -444,8 +474,11 @@ public class TournamentService {
 
     private Tournament updateTournamentTeamCount(Tournament tournament, Integer newTeamCount) {
         String locationName = tournament.getLocation().getLocationName();
+
         Date startAt = tournament.getStartAt();
         Date endAt = tournament.getEndAt();
+        validateDateOfUpdate(startAt);
+
         Integer startHour = tournament.getStartHour();
         Integer endHour = tournament.getEndHour();
         Integer matchDuration = tournament.getMatchDuration();

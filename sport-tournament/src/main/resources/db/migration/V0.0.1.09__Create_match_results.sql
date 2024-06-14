@@ -5,6 +5,6 @@ CREATE TABLE match_results (
     score_team1 INT NOT NULL,
     score_team2 INT NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (match_id) REFERENCES matches(id),
-    FOREIGN KEY (winning_team_id) REFERENCES teams(id)
+    FOREIGN KEY (match_id) REFERENCES matches(id) ON DELETE CASCADE,
+    FOREIGN KEY (winning_team_id) REFERENCES teams(id) ON DELETE CASCADE
 );

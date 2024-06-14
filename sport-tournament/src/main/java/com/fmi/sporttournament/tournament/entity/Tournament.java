@@ -56,4 +56,7 @@ public class Tournament {
 
     @Column(name = "match_duration", nullable = false)
     private Integer matchDuration;
+
+    @Column(name = "team_members_count", nullable = false)
+    private Integer teamMemberCount;
 }

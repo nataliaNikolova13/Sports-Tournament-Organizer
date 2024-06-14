@@ -30,4 +30,5 @@ public interface TournamentRepository extends JpaRepository<Tournament, Long> {
     List<Tournament> findConflictingTournaments(@Param("locationId") Long locationId,
                                                 @Param("startAt") Date startAt,
                                                 @Param("endAt") Date endAt);
+
 }

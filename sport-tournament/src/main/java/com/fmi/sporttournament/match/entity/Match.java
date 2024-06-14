@@ -16,22 +16,22 @@ public class Match {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "round_id", nullable = false)
     private Round round;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "team1_id", nullable = false)
     private Team team1;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "team2_id", nullable = false)
     private Team team2;
 
     @Column(name = "match_time", nullable = false)
     private LocalDateTime matchTime;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "venue_id", nullable = false)
     private Venue venue;
 }
