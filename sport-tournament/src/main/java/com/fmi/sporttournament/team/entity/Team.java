@@ -4,7 +4,6 @@ import com.fmi.sporttournament.team.entity.category.TeamCategory;
 import jakarta.persistence.*;
 import lombok.Data;
 
-
 @Entity
 @Data
 @Table(name = "teams")

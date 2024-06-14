@@ -46,8 +46,10 @@ public class ParticipantService {
         return existingParticipant.get();
     }
 
-    private boolean checkIfOnlyOneUserLeftInTeam(Team team) {
-        return participantRepository.countParticipantsByTeamAndStatus(team, ParticipantStatus.joined) == 1;
+    private void checkIfNoUserLeftInTeam(Team team) {
+        if (participantRepository.countParticipantsByTeamAndStatus(team, ParticipantStatus.joined) == 0) {
+            throw new IllegalStateException("The team " + team.getName() + " isn't active");
+        }
     }
 
     public Participant create(User user, Team team) {
@@ -60,16 +62,18 @@ public class ParticipantService {
     }
 
     public Participant remove(User user, Team team) {
-        Participant existingParticipant = validateUserInTeam(user, team);
-        existingParticipant.setStatus(ParticipantStatus.left);
-        existingParticipant.setTimeStamp(new Date());
+        return changeStatus(user, team, ParticipantStatus.left);
+    }
 
-        if (checkIfOnlyOneUserLeftInTeam(team)) {
-            teamRepository.deleteById(team.getId());
-        } else {
-            participantRepository.save(existingParticipant);
-        }
-        return existingParticipant;
+    public Participant rejoinTeam(User user, Team team) {
+        return changeStatus(user, team, ParticipantStatus.joined);
+    }
+
+    private Participant changeStatus(User user, Team team, ParticipantStatus status) {
+        Participant existingParticipant = validateUserInTeam(user, team);
+        existingParticipant.setStatus(status);
+        existingParticipant.setTimeStamp(new Date());
+        return participantRepository.save(existingParticipant);
     }
 
     public boolean isUserAlreadyInTeam(User user, Team team) {
@@ -95,6 +99,7 @@ public class ParticipantService {
             throw new IllegalStateException("User is already a participant of the team");
         }
 
+        checkIfNoUserLeftInTeam(team.get());
         validateTeamNotParticipateInTournament(team.get());
         if (userAlreadyLeft(user.get(), team.get())) {
             return rejoinTeam(user.get(), team.get());
@@ -119,12 +124,5 @@ public class ParticipantService {
         }
         validateTeamNotParticipateInTournament(team.get());
         return remove(user.get(), team.get());
-    }
-
-    public Participant rejoinTeam(User user, Team team) {
-        Participant existingParticipant = validateUserInTeam(user, team);
-        existingParticipant.setStatus(ParticipantStatus.joined);
-        existingParticipant.setTimeStamp(new Date());
-        return participantRepository.save(existingParticipant);
     }
 }

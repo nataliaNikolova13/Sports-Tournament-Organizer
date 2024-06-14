@@ -10,8 +10,7 @@ import com.fmi.sporttournament.tournament.entity.Tournament;
 import com.fmi.sporttournament.tournament.mapper.TournamentMapper;
 
 import com.fmi.sporttournament.location.repository.LocationRepository;
-import com.fmi.sporttournament.round.repository.RoundRepository;
-import com.fmi.sporttournament.team.repository.TeamRepository;
+
 import com.fmi.sporttournament.tournament.repository.TournamentRepository;
 
 import lombok.RequiredArgsConstructor;

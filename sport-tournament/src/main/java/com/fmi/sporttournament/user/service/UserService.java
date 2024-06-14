@@ -1,14 +1,26 @@
 package com.fmi.sporttournament.user.service;
 
+import com.fmi.sporttournament.participant.repository.ParticipantRepository;
+
+import com.fmi.sporttournament.team.entity.Team;
+
+import com.fmi.sporttournament.tournament_participant.entity.status.TournamentParticipantStatus;
+import com.fmi.sporttournament.tournament_participant.repository.TournamentParticipantRepository;
+
 import com.fmi.sporttournament.user.dto.request.ChangeRoleRequest;
+
 import com.fmi.sporttournament.email.service.EmailService;
+
 import com.fmi.sporttournament.user.entity.User;
 import com.fmi.sporttournament.user.entity.role.Role;
 import com.fmi.sporttournament.user.repository.UserRepositoty;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +30,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepositoty userRepo;
+    private final ParticipantRepository participantRepository;
+    private final TournamentParticipantRepository tournamentParticipantRepository;
     private final EmailService emailService;
 
     public User getCurrentUser() {
@@ -52,7 +66,19 @@ public class UserService {
         return userRepo.getByRole(role);
     }
 
+    private void validateUserNotParticipateInTournament(User user) {
+        List<Team> teams = participantRepository.findTeamsByUser(user);
+        for (Team team : teams) {
+            if (!tournamentParticipantRepository.findTournamentsByTeam(team, TournamentParticipantStatus.joined)
+                .isEmpty()) {
+                throw new IllegalStateException("The user participate in tournament and it can't be deleted");
+            }
+        }
+    }
+
     public void removeUser(Long id) {
+        Optional<User> user = userRepo.findById(id);
+        user.ifPresent(this::validateUserNotParticipateInTournament);
         userRepo.deleteById(id);
     }
 

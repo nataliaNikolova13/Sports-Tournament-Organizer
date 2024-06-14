@@ -5,6 +5,8 @@ import com.fmi.sporttournament.team.dto.request.TeamRegistrationRequest;
 import com.fmi.sporttournament.team.entity.Team;
 import com.fmi.sporttournament.participant.service.ParticipantService;
 
+import com.fmi.sporttournament.tournament_participant.entity.status.TournamentParticipantStatus;
+import com.fmi.sporttournament.tournament_participant.repository.TournamentParticipantRepository;
 import com.fmi.sporttournament.user.entity.User;
 
 import com.fmi.sporttournament.team.mapper.TeamMapper;
@@ -17,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -25,6 +28,7 @@ import java.util.Optional;
 public class TeamService {
     private final TeamRepository teamRepository;
     private final ParticipantService participantService;
+    private final TournamentParticipantRepository tournamentParticipantRepository;
     private final UserService userService;
     private final TeamMapper teamMapper;
 
@@ -45,6 +49,14 @@ public class TeamService {
         return team.get();
     }
 
+    private void validateTeamNotParticipateInTournament(Team team) {
+        if (!tournamentParticipantRepository.findTournamentsByTeam(team, TournamentParticipantStatus.joined)
+            .isEmpty()) {
+            throw new IllegalStateException(
+                "The team " + team.getName() + " is participating in a tournament and it can't be deleted");
+        }
+    }
+
     public Team createTeam(TeamRegistrationRequest teamRegistrationRequest) {
         String teamName = teamRegistrationRequest.getName();
 
@@ -60,12 +72,14 @@ public class TeamService {
     }
 
     public void deleteTeamById(Long id) {
-        validateTeamIdExist(id);
+        Team team = validateTeamIdExist(id);
+        validateTeamNotParticipateInTournament(team);
         teamRepository.deleteById(id);
     }
 
     public void deleteTeamByTournamentName(String teamName) {
         Team team = validateTeamNameExist(teamName);
+        validateTeamNotParticipateInTournament(team);
         teamRepository.deleteById(team.getId());
     }
 }

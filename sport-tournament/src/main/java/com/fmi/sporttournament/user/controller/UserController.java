@@ -51,8 +51,14 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-        userService.removeUser(id);
-        return ResponseEntity.ok().build();
+        try {
+            userService.removeUser(id);
+            return ResponseEntity.ok().build();
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @PutMapping("/role/{userId}")

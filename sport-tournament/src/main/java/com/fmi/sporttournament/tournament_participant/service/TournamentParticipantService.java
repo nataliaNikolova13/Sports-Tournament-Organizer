@@ -85,7 +85,8 @@ public class TournamentParticipantService {
 
     private boolean validateTournamentCapacity(Tournament tournament) {
         return tournament.getTeamCount() <=
-            tournamentParticipantRepository.findAllTeamsByTournamentStatus(TournamentParticipantStatus.joined).size();
+            tournamentParticipantRepository.findAllTeamsByTournamentStatusAndTournament(
+                TournamentParticipantStatus.joined, tournament).size();
     }
 
     private void validateTeamMemberCount(Tournament tournament, Team team) {
@@ -96,11 +97,32 @@ public class TournamentParticipantService {
         }
     }
 
-    private void validateTeamNotParticipatingInAnyTournament(Team team) {
-        if (!tournamentParticipantRepository.findTournamentsByTeam(team, TournamentParticipantStatus.joined)
-            .isEmpty()) {
-            throw new IllegalStateException("The team already participates in another tournament");
+    private void validateNoOverlappingUsersInTeamsInTournaments(Team team, Tournament tournament) {
+        List<User> usersInTeam = participantRepository.findUsersByTeam(team);
+
+        for (User user : usersInTeam) {
+            List<Team> teamsForUser = participantRepository.findTeamsByUser(user);
+            for (Team userTeam : teamsForUser) {
+                List<Tournament> tournaments =
+                    tournamentParticipantRepository.findTournamentsByTeam(userTeam, TournamentParticipantStatus.joined);
+                for (Tournament userTeamTournament : tournaments) {
+                    if (areTournamentsOverlapping(userTeamTournament, tournament)) {
+                        throw new IllegalStateException(
+                            "Adding team conflicts with another tournament where the user " + user.getFullName() +
+                                " is participating.");
+                    }
+                }
+            }
         }
+    }
+
+    private boolean areTournamentsOverlapping(Tournament tournament1, Tournament tournament2) {
+        Date start1 = tournament1.getStartAt();
+        Date end1 = tournament1.getEndAt();
+        Date start2 = tournament2.getStartAt();
+        Date end2 = tournament2.getEndAt();
+
+        return start1.compareTo(end2) <= 0 && start2.compareTo(end1) <= 0;
     }
 
     public TournamentParticipant createTournamentParticipant(Tournament tournament, Team team) {
@@ -140,11 +162,22 @@ public class TournamentParticipantService {
 
     public TournamentParticipant removeTournamentParticipant(Tournament tournament, Team team) {
         List<Team> queuedTeams =
-            tournamentParticipantRepository.findAllTeamsByTournamentStatus(TournamentParticipantStatus.queued);
+            tournamentParticipantRepository.findAllTeamsByTournamentStatusAndTournament(
+                TournamentParticipantStatus.queued, tournament);
         if (!queuedTeams.isEmpty() && !queuedTeams.contains(team)) {
-            Team firstTeamInQueue = queuedTeams.get(0);
-            // to do send email
-            changeStatus(tournament, firstTeamInQueue, TournamentParticipantStatus.joined);
+            int i = 0;
+            boolean isTeamJoined = false;
+            while (i < queuedTeams.size() && !isTeamJoined) {
+                try {
+                    Team teamInQueue = queuedTeams.get(i);
+                    // to do send email
+                    validateNoOverlappingUsersInTeamsInTournaments(teamInQueue, tournament);
+                    changeStatus(tournament, teamInQueue, TournamentParticipantStatus.joined);
+                    isTeamJoined = true;
+                } catch (IllegalStateException e) {
+                    i++;
+                }
+            }
         }
         return changeStatus(tournament, team, TournamentParticipantStatus.left);
     }
@@ -162,8 +195,7 @@ public class TournamentParticipantService {
         }
 
         validateDateOfAdding(tournament);
-        validateTeamNotParticipatingInAnyTournament(team);
-        validateNoOverlappingTeamsInTournaments(team,tournament);
+        validateNoOverlappingUsersInTeamsInTournaments(team, tournament);
 
         if (isTeamLeftTournament(tournament, team)) {
             return rejoinTournament(tournament, team);
@@ -187,32 +219,5 @@ public class TournamentParticipantService {
         validateDateOfRemoving(tournament);
 
         return removeTournamentParticipant(tournament, team);
-    }
-
-    private void validateNoOverlappingTeamsInTournaments(Team team, Tournament tournament) {
-        List<User> usersInTeam = participantRepository.findUsersByTeam(team);
-
-        for (User user : usersInTeam) {
-            List<Team> teamsForUser = participantRepository.findTeamsByUser(user);
-            for (Team userTeam : teamsForUser) {
-                List<Tournament> tournaments =
-                    tournamentParticipantRepository.findTournamentsByTeam(userTeam, TournamentParticipantStatus.joined);
-                for (Tournament userTeamTournament : tournaments) {
-                    if (areTournamentsOverlapping(userTeamTournament, tournament)) {
-                        throw new IllegalArgumentException(
-                            "Adding team conflicts with another tournament where the user is participating.");
-                    }
-                }
-            }
-        }
-    }
-
-    private boolean areTournamentsOverlapping(Tournament tournament1, Tournament tournament2) {
-        Date start1 = tournament1.getStartAt();
-        Date end1 = tournament1.getEndAt();
-        Date start2 = tournament2.getStartAt();
-        Date end2 = tournament2.getEndAt();
-
-        return start1.compareTo(end2) <= 0 && start2.compareTo(end1) <= 0;
     }
 }
