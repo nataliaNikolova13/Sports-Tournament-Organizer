@@ -1,5 +1,6 @@
 package com.fmi.sporttournament.tournament.repository;
 
+import com.fmi.sporttournament.location.entity.Location;
 import com.fmi.sporttournament.tournament.entity.Tournament;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -30,5 +31,8 @@ public interface TournamentRepository extends JpaRepository<Tournament, Long> {
     List<Tournament> findConflictingTournaments(@Param("locationId") Long locationId,
                                                 @Param("startAt") Date startAt,
                                                 @Param("endAt") Date endAt);
+
+    @Query("SELECT t FROM Tournament t WHERE t.location= :location AND t.endAt > CURRENT_TIMESTAMP")
+    List<Tournament> findValidTournamentsByLocation(Location location);
 
 }
