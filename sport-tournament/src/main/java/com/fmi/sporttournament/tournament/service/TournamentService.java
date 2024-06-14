@@ -244,13 +244,13 @@ public class TournamentService {
 
     public void deleteTournamentById(Long id) {
         Tournament tournament = validateTournamentIdExist(id);
-        validateRequestDates(tournament.getStartAt(), tournament.getEndAt());
+        validateDateOfUpdate(tournament.getStartAt());
         tournamentRepository.deleteById(id);
     }
 
     public void deleteTournamentByTournamentName(String tournamentName) {
         Tournament tournament = validateTournamentNameExist(tournamentName);
-        validateRequestDates(tournament.getStartAt(), tournament.getEndAt());
+        validateDateOfUpdate(tournament.getStartAt());
         tournamentRepository.deleteById(tournament.getId());
     }
 
@@ -342,6 +342,8 @@ public class TournamentService {
         Date startAt = tournament.getStartAt();
         Date endAt = tournament.getEndAt();
 
+        validateRequestDates(tournament.getStartAt(), tournament.getEndAt());
+
         validateLocationAvailabilityDates(tournament, location, startAt, endAt);
         validateDateOfUpdate(startAt);
 
@@ -367,18 +369,20 @@ public class TournamentService {
         return updateTournamentLocation(tournament, newLocationName);
     }
 
-    public Tournament updateTournamentSportTypeById(Long id, String newSportType) {
-        Tournament tournament = validateTournamentIdExist(id);
+    private Tournament updateTournamentSportType(Tournament tournament, String newSportType) {
         validateDateOfUpdate(tournament.getStartAt());
         tournament.setSportType(newSportType);
         return tournamentRepository.save(tournament);
     }
 
+    public Tournament updateTournamentSportTypeById(Long id, String newSportType) {
+        Tournament tournament = validateTournamentIdExist(id);
+        return updateTournamentSportType(tournament, newSportType);
+    }
+
     public Tournament updateTournamentSportTypeByTournamentName(String tournamentName, String newSportType) {
         Tournament tournament = validateTournamentNameExist(tournamentName);
-        validateDateOfUpdate(tournament.getStartAt());
-        tournament.setSportType(newSportType);
-        return tournamentRepository.save(tournament);
+        return updateTournamentSportType(tournament, newSportType);
     }
 
     private Tournament updateTournamentDates(Tournament tournament, Date newStartAt, Date newEndAt) {

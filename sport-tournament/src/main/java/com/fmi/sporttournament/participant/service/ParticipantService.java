@@ -54,7 +54,6 @@ public class ParticipantService {
 
     public Participant create(User user, Team team) {
         Participant participant = new Participant();
-        validateTeamNotParticipateInTournament(team);
         participant.setUser(user);
         participant.setTeam(team);
         participant.setStatus(ParticipantStatus.joined);
