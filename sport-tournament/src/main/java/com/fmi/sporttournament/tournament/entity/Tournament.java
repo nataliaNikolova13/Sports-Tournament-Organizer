@@ -1,8 +1,11 @@
 package com.fmi.sporttournament.tournament.entity;
 
 import com.fmi.sporttournament.location.entity.Location;
+import com.fmi.sporttournament.tournament.entity.category.TournamentCategory;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,6 +37,10 @@ public class Tournament {
 
     @Column(nullable = false, name = "sport_type")
     private String sportType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, name = "tournament_category")
+    private TournamentCategory tournamentCategory;
 
     @ManyToOne
     @JoinColumn(name = "location_id", nullable = false)

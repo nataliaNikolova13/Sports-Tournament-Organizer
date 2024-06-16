@@ -156,10 +156,6 @@ public class TournamentService {
         }
     }
 
-    private Integer matchCount(Integer teamCount) {
-        return teamCount - 1;
-    }
-
     private Integer matchesInVenuePerDay(Integer startHour, Integer endHour, Integer matchDuration) {
         Integer durationTournamentDay = endHour - startHour;
         return durationTournamentDay / matchDuration;
@@ -260,7 +256,9 @@ public class TournamentService {
         validateTeamMemberCount(teamMemberCount);
 
         TournamentCreationRequest tournamentCreationRequest =
-            new TournamentCreationRequest(tournamentName, sportType, location, startAt, endAt, startHour, endHour,
+            new TournamentCreationRequest(tournamentName, sportType,
+                tournamentRegistrationRequest.getTournamentCategory(), location,
+                startAt, endAt, startHour, endHour,
                 teamCount, matchDuration, teamMemberCount);
 
         Tournament tournament = tournamentMapper.requestToTournament(tournamentCreationRequest);

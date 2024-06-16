@@ -2,6 +2,7 @@ package com.fmi.sporttournament.tournament_participant.service;
 
 import com.fmi.sporttournament.participant.entity.status.ParticipantStatus;
 import com.fmi.sporttournament.participant.repository.ParticipantRepository;
+import com.fmi.sporttournament.tournament.entity.category.TournamentCategory;
 import com.fmi.sporttournament.tournament_participant.dto.request.TournamentParticipantRequest;
 import com.fmi.sporttournament.team.entity.Team;
 import com.fmi.sporttournament.tournament.entity.Tournament;
@@ -94,7 +95,27 @@ public class TournamentParticipantService {
         Integer teamMemberCount =
             participantRepository.countParticipantsByTeamAndStatus(team, ParticipantStatus.joined);
         if (!tournament.getTeamMemberCount().equals(teamMemberCount)) {
-            throw new IllegalArgumentException("The count of the members isn't supported for the tournament");
+            throw new IllegalArgumentException(
+                "The count of the members in the team isn't supported for the tournament");
+        }
+    }
+
+    private void validateSameCategory(Tournament tournament, Team team) {
+        if (!tournament.getTournamentCategory().name().equals(team.getCategory().name())) {
+            throw new IllegalStateException("The team " + team.getName() + " isn't competing in the same category");
+        }
+    }
+
+    private void validateAllParticipantsInTeamWillBeInYouthCategory(Tournament tournament, Team team) {
+        if (tournament.getTournamentCategory() == TournamentCategory.youth) {
+            Date endAt = tournament.getEndAt();
+            List<User> users = participantRepository.findUsersByTeam(team);
+            for (User user : users) {
+                if (user.getAgeAtDate(endAt) > 18) {
+                    throw new IllegalStateException(
+                        "The user " + user.getUsername() + " will be over 18 until the end of the tournament.");
+                }
+            }
         }
     }
 
@@ -105,11 +126,12 @@ public class TournamentParticipantService {
             List<Team> teamsForUser = participantRepository.findTeamsByUser(user);
             for (Team userTeam : teamsForUser) {
                 List<Tournament> tournaments =
-                    tournamentParticipantRepository.findTournamentsByTeamAndStatus(userTeam, TournamentParticipantStatus.joined);
+                    tournamentParticipantRepository.findTournamentsByTeamAndStatus(userTeam,
+                        TournamentParticipantStatus.joined);
                 for (Tournament userTeamTournament : tournaments) {
                     if (areTournamentsOverlapping(userTeamTournament, tournament)) {
                         throw new IllegalStateException(
-                            "Adding team conflicts with another tournament where the user " + user.getFullName() +
+                            "Adding team conflicts with another tournament where the user " + user.getUsername() +
                                 " is participating.");
                     }
                 }
@@ -188,6 +210,8 @@ public class TournamentParticipantService {
         Team team = validateTeamNameExist(tournamentParticipantRequest);
 
         validateDateOfAdding(tournament);
+        validateSameCategory(tournament, team);
+        validateAllParticipantsInTeamWillBeInYouthCategory(tournament, team);
 
         if (isTeamJoinedTournament(tournament, team)) {
             throw new IllegalStateException("Team is already a participant of the tournament");

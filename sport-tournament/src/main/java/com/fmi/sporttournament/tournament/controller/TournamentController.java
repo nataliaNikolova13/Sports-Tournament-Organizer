@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -52,6 +53,32 @@ public class TournamentController {
         return tournamentOptional.map(
                 tournament -> new ResponseEntity<>(tournamentMapper.tournamentToResponse(tournament), HttpStatus.OK))
             .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @GetMapping("/location/{locationName}")
+    public ResponseEntity<List<TournamentResponse>> getTournamentsByLocationName(@PathVariable String locationName) {
+        try {
+            List<Tournament> tournaments = tournamentService.getTournamentByLocationName(locationName);
+            return ResponseEntity.ok(tournamentMapper.tournamentsToResponse(tournaments));
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (
+            Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @GetMapping("/sport/{sportType}")
+    public ResponseEntity<List<TournamentResponse>> getTournamentsBySportType(@PathVariable String sportType) {
+        try {
+            List<Tournament> tournaments = tournamentService.getTournamentBySportType(sportType);
+            return ResponseEntity.ok(tournamentMapper.tournamentsToResponse(tournaments));
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (
+            Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @PostMapping
@@ -216,9 +243,9 @@ public class TournamentController {
             Tournament tournament =
                 tournamentService.updateTournamentDatesById(id, newStartAt, newEndAt);
             return ResponseEntity.ok(tournamentMapper.tournamentToResponse(tournament));
-        } catch (IllegalArgumentException|IllegalStateException e){
+        } catch (IllegalArgumentException | IllegalStateException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch(Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }

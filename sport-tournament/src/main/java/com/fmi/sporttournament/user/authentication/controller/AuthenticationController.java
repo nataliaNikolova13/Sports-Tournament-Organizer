@@ -7,6 +7,7 @@ import com.fmi.sporttournament.user.authentication.dto.register.response.Registe
 import com.fmi.sporttournament.user.entity.User;
 import com.fmi.sporttournament.user.authentication.service.AuthenticationService;
 import com.fmi.sporttournament.user.authentication.jwt.service.JwtService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,18 +28,24 @@ public class AuthenticationController {
 
     @PostMapping("/signup")
     public ResponseEntity<RegisterResponse> register(@RequestBody RegisterUserDto registerUserDto) {
-        User registeredUser = authenticationService.signup(registerUserDto);
+        try {
+            User registeredUser = authenticationService.signup(registerUserDto);
 
-        String jwtToken = jwtService.generateToken(registeredUser);
+            String jwtToken = jwtService.generateToken(registeredUser);
 
-        RegisterResponse registerResponse = RegisterResponse.builder()
+            RegisterResponse registerResponse = RegisterResponse.builder()
                 .fullName(registeredUser.getFullName())
                 .email(registeredUser.getEmail())
                 .token(jwtToken)
                 .expiresIn(jwtService.getExpirationTime())
                 .build();
 
-        return ResponseEntity.ok(registerResponse);
+            return ResponseEntity.ok(registerResponse);
+        }catch (IllegalStateException e){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }catch (Exception e){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @PostMapping("/login")

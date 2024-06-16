@@ -12,9 +12,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.time.ZoneId;
 
 @Table(name = "users")
 @Entity
@@ -30,6 +33,9 @@ public class User implements UserDetails{
 
     @Column(nullable = false, name="full_name")
     private String fullName;
+
+    @Column(name = "birthdate")
+    private LocalDate birthdate;
 
     @Column(unique = true, length = 100, nullable = false)
     private String email;
@@ -78,5 +84,19 @@ public class User implements UserDetails{
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public int getAge() {
+        if (this.birthdate == null) {
+            throw new IllegalArgumentException("Birthdate is not set");
+        }
+        return Period.between(this.birthdate, LocalDate.now()).getYears();
+    }
+
+    public int getAgeAtDate(Date date) {
+        if (this.birthdate == null) {
+            throw new IllegalArgumentException("Birthdate is not set");
+        }
+        return Period.between(this.birthdate, date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()).getYears();
     }
 }

@@ -1,5 +1,6 @@
 package com.fmi.sporttournament.tournament.dto.response;
 
+import com.fmi.sporttournament.tournament.entity.category.TournamentCategory;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -10,7 +11,8 @@ import java.util.Date;
 public class TournamentResponse {
     private String tournamentName;
     private String sportType;
-    private Long locationId;
+    private String locationName;
+    private TournamentCategory tournamentCategory;
     private Date startAt;
     private Date endAt;
     private Integer startHour;

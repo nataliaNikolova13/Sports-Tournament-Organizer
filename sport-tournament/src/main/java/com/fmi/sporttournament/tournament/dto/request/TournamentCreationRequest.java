@@ -1,7 +1,7 @@
 package com.fmi.sporttournament.tournament.dto.request;
 
 import com.fmi.sporttournament.location.entity.Location;
-import jakarta.persistence.Column;
+import com.fmi.sporttournament.tournament.entity.category.TournamentCategory;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -12,6 +12,7 @@ import java.util.Date;
 public class TournamentCreationRequest {
     private String tournamentName;
     private String sportType;
+    private TournamentCategory tournamentCategory;
     private Location location;
     private Date startAt;
     private Date endAt;

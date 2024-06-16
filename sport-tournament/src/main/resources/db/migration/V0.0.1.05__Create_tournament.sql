@@ -2,6 +2,7 @@ CREATE TABLE tournaments (
     id BIGINT NOT NULL AUTO_INCREMENT,
     tournament_name VARCHAR(255) NOT NULL,
     sport_type VARCHAR(255) NOT NULL,
+    tournament_category ENUM('amateur', 'professional', 'youth') NOT NULL,
     location_id BIGINT NOT NULL,
     start_at TIMESTAMP NOT NULL,
     end_at TIMESTAMP NOT NULL,
