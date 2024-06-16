@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 
@@ -50,7 +49,7 @@ public class TeamService {
     }
 
     private void validateTeamNotParticipateInTournament(Team team) {
-        if (!tournamentParticipantRepository.findTournamentsByTeam(team, TournamentParticipantStatus.joined)
+        if (!tournamentParticipantRepository.findTournamentsByTeamAndStatus(team, TournamentParticipantStatus.joined)
             .isEmpty()) {
             throw new IllegalStateException(
                 "The team " + team.getName() + " is participating in a tournament and it can't be deleted");
@@ -64,7 +63,7 @@ public class TeamService {
             throw new IllegalArgumentException("Team with this name already exists");
         }
 
-        Team team = teamMapper.dtoToTeam(teamRegistrationRequest);
+        Team team = teamMapper.requestToTeam(teamRegistrationRequest);
         User currentUser = userService.getCurrentUser();
         team = teamRepository.save(team);
         participantService.create(currentUser, team);

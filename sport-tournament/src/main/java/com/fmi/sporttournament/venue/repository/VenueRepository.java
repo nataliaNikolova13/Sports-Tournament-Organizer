@@ -1,5 +1,6 @@
 package com.fmi.sporttournament.venue.repository;
 
+import com.fmi.sporttournament.location.entity.Location;
 import com.fmi.sporttournament.venue.entity.Venue;
 
 import jakarta.transaction.Transactional;
@@ -19,6 +20,8 @@ public interface VenueRepository extends JpaRepository<Venue, Long> {
     Optional<Venue> findById(Long id);
 
     List<Venue> findByLocationLocationName(String locationName);
+
+    Optional<Venue> findByLocationAndNumber(Location location, Long id);
 
     @Modifying
     @Transactional

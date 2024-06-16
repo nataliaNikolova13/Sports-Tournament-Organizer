@@ -23,8 +23,8 @@ public class MatchResult {
     private Team winningTeam;
 
     @Column(name = "score_team1", nullable = false)
-    private int scoreTeam1;
+    private Integer scoreTeam1;
 
     @Column(name = "score_team2", nullable = false)
-    private int scoreTeam2;
+    private Integer scoreTeam2;
 }

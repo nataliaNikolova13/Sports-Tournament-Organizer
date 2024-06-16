@@ -69,7 +69,7 @@ public class UserService {
     private void validateUserNotParticipateInTournament(User user) {
         List<Team> teams = participantRepository.findTeamsByUser(user);
         for (Team team : teams) {
-            if (!tournamentParticipantRepository.findTournamentsByTeam(team, TournamentParticipantStatus.joined)
+            if (!tournamentParticipantRepository.findTournamentsByTeamAndStatus(team, TournamentParticipantStatus.joined)
                 .isEmpty()) {
                 throw new IllegalStateException("The user participate in tournament and it can't be deleted");
             }

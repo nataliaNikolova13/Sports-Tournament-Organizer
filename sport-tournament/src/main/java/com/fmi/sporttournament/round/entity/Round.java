@@ -23,5 +23,5 @@ public class Round {
     private Tournament tournament;
 
     @Column(name = "round_number", nullable = false)
-    private int roundNumber;
+    private Integer roundNumber;
 }

@@ -124,6 +124,7 @@ public class LocationService {
 
         String locationName = locationRequest.getLocationName();
         validateLocationNameIsNotBlank(locationName);
+        validateLocationIsNotUsedInTournament(location);
 
         if (!location.getLocationName().equals(locationName)) {
             validateLocationNameNotExist(locationName);
@@ -141,6 +142,7 @@ public class LocationService {
         if (!location.getLocationName().equals(newLocationName)) {
             validateLocationNameNotExist(newLocationName);
         }
+        validateLocationIsNotUsedInTournament(location);
 
         location.setLocationName(newLocationName);
         return locationRepository.save(location);

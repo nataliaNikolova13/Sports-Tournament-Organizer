@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -32,7 +31,7 @@ public class ParticipantService {
     private final TournamentParticipantRepository tournamentParticipantRepository;
 
     private void validateTeamNotParticipateInTournament(Team team) {
-        if (!tournamentParticipantRepository.findTournamentsByTeam(team, TournamentParticipantStatus.joined)
+        if (!tournamentParticipantRepository.findTournamentsByTeamAndStatus(team, TournamentParticipantStatus.joined)
             .isEmpty()) {
             throw new IllegalArgumentException("The team already participate in tournament and it can't be modified");
         }

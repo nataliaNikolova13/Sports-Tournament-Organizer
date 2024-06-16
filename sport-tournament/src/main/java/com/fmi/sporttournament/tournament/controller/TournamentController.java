@@ -67,6 +67,18 @@ public class TournamentController {
         }
     }
 
+    @PostMapping("/start-tournament/{id}")
+    public ResponseEntity<TournamentResponse> startTournament(@PathVariable Long id) {
+        try {
+            Tournament tournament = tournamentService.startTournamentById(id);
+            return ResponseEntity.ok(tournamentMapper.tournamentToResponse(tournament));
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTournamentById(@PathVariable Long id) {
         try {

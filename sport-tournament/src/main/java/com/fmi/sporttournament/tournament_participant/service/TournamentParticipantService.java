@@ -105,7 +105,7 @@ public class TournamentParticipantService {
             List<Team> teamsForUser = participantRepository.findTeamsByUser(user);
             for (Team userTeam : teamsForUser) {
                 List<Tournament> tournaments =
-                    tournamentParticipantRepository.findTournamentsByTeam(userTeam, TournamentParticipantStatus.joined);
+                    tournamentParticipantRepository.findTournamentsByTeamAndStatus(userTeam, TournamentParticipantStatus.joined);
                 for (Tournament userTeamTournament : tournaments) {
                     if (areTournamentsOverlapping(userTeamTournament, tournament)) {
                         throw new IllegalStateException(
@@ -187,6 +187,8 @@ public class TournamentParticipantService {
         Tournament tournament = validateTournamentNameExist(tournamentParticipantRequest);
         Team team = validateTeamNameExist(tournamentParticipantRequest);
 
+        validateDateOfAdding(tournament);
+
         if (isTeamJoinedTournament(tournament, team)) {
             throw new IllegalStateException("Team is already a participant of the tournament");
         }
@@ -195,7 +197,6 @@ public class TournamentParticipantService {
             throw new IllegalStateException("Team is already queued in the tournament");
         }
 
-        validateDateOfAdding(tournament);
         validateNoOverlappingUsersInTeamsInTournaments(team, tournament);
 
         if (isTeamLeftTournament(tournament, team)) {
@@ -209,6 +210,8 @@ public class TournamentParticipantService {
         Tournament tournament = validateTournamentNameExist(tournamentParticipantRequest);
         Team team = validateTeamNameExist(tournamentParticipantRequest);
 
+        validateDateOfRemoving(tournament);
+
         if (!tournamentParticipantRepository.existsByTournamentAndTeam(tournament, team)) {
             throw new IllegalStateException("Team doesn't participate in the tournament");
         }
@@ -217,24 +220,19 @@ public class TournamentParticipantService {
             throw new IllegalStateException("Team has already left the tournament");
         }
 
-        validateDateOfRemoving(tournament);
-
         return removeTournamentParticipant(tournament, team);
     }
 
     @Scheduled(cron = "0 0 0 * * *")
     public void updateParticipantsStatusAfterTournament() {
-        List<Tournament> endedTournaments = tournamentRepository.findByEndAtBefore(new Date());
+        List<TournamentParticipant> participants =
+            tournamentParticipantRepository.findAllParticipantsWithStatusJoinedAndTournamentEnded(
+                TournamentParticipantStatus.joined, new Date());
 
-        for (Tournament tournament : endedTournaments) {
-            List<TournamentParticipant> participants = tournamentParticipantRepository.findByTournament(tournament);
-            for (TournamentParticipant participant : participants) {
-                if (participant.getStatus() == TournamentParticipantStatus.joined) {
-                    participant.setStatus(TournamentParticipantStatus.left);
-                    participant.setTimeStamp(new Date());
-                    tournamentParticipantRepository.save(participant);
-                }
-            }
+        for (TournamentParticipant participant : participants) {
+            participant.setStatus(TournamentParticipantStatus.left);
+            participant.setTimeStamp(new Date());
+            tournamentParticipantRepository.save(participant);
         }
     }
 }

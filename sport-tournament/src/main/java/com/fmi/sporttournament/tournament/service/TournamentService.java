@@ -1,5 +1,17 @@
 package com.fmi.sporttournament.tournament.service;
 
+import com.fmi.sporttournament.email.dto.request.EmailRequestAllUsers;
+import com.fmi.sporttournament.email.service.EmailService;
+import com.fmi.sporttournament.export.match.MatchInformation;
+import com.fmi.sporttournament.match.entity.Match;
+import com.fmi.sporttournament.match.service.MatchService;
+
+import com.fmi.sporttournament.round.dto.request.RoundRequest;
+import com.fmi.sporttournament.round.entity.Round;
+import com.fmi.sporttournament.round.service.RoundService;
+
+import com.fmi.sporttournament.team.entity.Team;
+
 import com.fmi.sporttournament.tournament.dto.request.TournamentCreationRequest;
 import com.fmi.sporttournament.tournament.dto.request.TournamentRegistrationRequest;
 
@@ -13,12 +25,19 @@ import com.fmi.sporttournament.location.repository.LocationRepository;
 
 import com.fmi.sporttournament.tournament.repository.TournamentRepository;
 
+import com.fmi.sporttournament.tournament_participant.entity.status.TournamentParticipantStatus;
+import com.fmi.sporttournament.tournament_participant.repository.TournamentParticipantRepository;
+import com.fmi.sporttournament.user.entity.User;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.util.Pair;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +48,11 @@ public class TournamentService {
     private final TournamentRepository tournamentRepository;
     private final TournamentMapper tournamentMapper;
     private final LocationRepository locationRepository;
+    private final TournamentParticipantRepository tournamentParticipantRepository;
+    private final MatchService matchService;
+    private final RoundService roundService;
+    private final MatchInformation matchInformation;
+    private final EmailService emailService;
 
     private void validateTournamentNameNotExist(String tournamentName) {
         if (getTournamentByTournamentName(tournamentName).isPresent()) {
@@ -106,17 +130,17 @@ public class TournamentService {
     }
 
     private void validateTeamCount(Integer teamCount) {
-        if (teamCount < 0 || (teamCount & (teamCount - 1)) != 0) {
+        if (teamCount < 2 || (teamCount & (teamCount - 1)) != 0) {
             throw new IllegalArgumentException("The team count should be power of 2.");
         }
     }
 
     private void validateHours(Integer startHour, Integer endHour) {
-        if (startHour < 0 || startHour > 24) {
+        if (startHour < 0 || startHour > 23) {
             throw new IllegalArgumentException("The start hour is invalid");
         }
 
-        if (endHour < 0 || endHour > 24) {
+        if (endHour < 0 || endHour > 23) {
             throw new IllegalArgumentException("The end date is invalid");
         }
 
@@ -136,20 +160,28 @@ public class TournamentService {
         return teamCount - 1;
     }
 
-    private Integer roundsInVenuePerDay(Integer startHour, Integer endHour, Integer matchDuration) {
+    private Integer matchesInVenuePerDay(Integer startHour, Integer endHour, Integer matchDuration) {
         Integer durationTournamentDay = endHour - startHour;
         return durationTournamentDay / matchDuration;
+    }
+
+    private Integer howManyDaysForOneRound(Integer matchesCountInRound, Long matchesPerDay) {
+        return (int) Math.ceil((double) matchesCountInRound / matchesPerDay);
     }
 
     private void validateVenuesAvailability(String locationName, Date startAt, Date endAt, Integer startHour,
                                             Integer endHour, Integer teamCount, Integer matchDuration) {
         Long availableDays = ChronoUnit.DAYS.between(startAt.toInstant(), endAt.toInstant());
         Long venueCount = locationRepository.countVenuesByLocationName(locationName);
-        Integer roundsInVenuePerDay = roundsInVenuePerDay(startHour, endHour, matchDuration);
-        Integer possibleMatchCount = Math.toIntExact((int) roundsInVenuePerDay * venueCount * availableDays);
-        Integer matchCount = matchCount(teamCount);
-
-        if (possibleMatchCount < matchCount) {
+        Integer matchesInVenuePerDay = matchesInVenuePerDay(startHour, endHour, matchDuration);
+        Long matchesPerDay = matchesInVenuePerDay * venueCount;
+        int necessaryDays = 0;
+        while (teamCount > 0) {
+            Integer matchesCountInRound = teamCount / 2;
+            necessaryDays += howManyDaysForOneRound(matchesCountInRound, matchesPerDay);
+            teamCount /= 2;
+        }
+        if (necessaryDays > availableDays) {
             throw new IllegalArgumentException("There aren't enough venues for this count of teams " + teamCount +
                 " and for this match duration in hours " + matchDuration + ".");
         }
@@ -164,6 +196,14 @@ public class TournamentService {
     private void validateTeamMemberCountIsNotChanged(Tournament tournament, Integer teamMemberCount) {
         if (teamMemberCount != tournament.getTeamMemberCount()) {
             throw new IllegalArgumentException("The number of members of the teams can't be changed");
+        }
+    }
+
+    private void validateTournamentCapacityBeforeStart(Tournament tournament) {
+        if (tournament.getTeamCount() != tournamentParticipantRepository.findAllTeamsByTournamentStatusAndTournament(
+            TournamentParticipantStatus.joined, tournament).size()) {
+            throw new IllegalStateException(
+                "The tournament can't start since the count of the joined teams isn't supported");
         }
     }
 
@@ -226,21 +266,6 @@ public class TournamentService {
         Tournament tournament = tournamentMapper.requestToTournament(tournamentCreationRequest);
         return tournamentRepository.save(tournament);
     }
-
-//    public void startTournament(Long tournamentId) {
-//        Tournament tournament = tournamentRepository.findById(tournamentId)
-//                .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
-//        List<Team> teams = teamRepository.findTeamsByTournamentId(tournamentId);
-//        Collections.shuffle(teams);
-//    }
-
-//    public void processNextRound(Long tournamentId) {
-//        Tournament tournament = tournamentRepository.findById(tournamentId)
-//                .orElseThrow(() -> new IllegalArgumentException("Tournament not found"));
-//
-//        int nextRoundNumber = roundRepository.findByTournamentId(tournamentId).get().getRoundNumber() + 1;
-//        List<Team> winningTeams = getWinningTeamsFromLastRound(tournamentId, nextRoundNumber - 1);
-//    }
 
     public void deleteTournamentById(Long id) {
         Tournament tournament = validateTournamentIdExist(id);
@@ -505,5 +530,46 @@ public class TournamentService {
     public Tournament updateTournamentTeamCountByTournamentName(String tournamentName, Integer newTeamCount) {
         Tournament tournament = validateTournamentNameExist(tournamentName);
         return updateTournamentTeamCount(tournament, newTeamCount);
+    }
+
+    private void scheduleTournamentMatches(Tournament tournament) {
+        List<Team> teams = tournamentParticipantRepository.findAllTeamsByTournamentStatusAndTournament(
+            TournamentParticipantStatus.joined, tournament);
+        int roundCount = (int) (Math.log(tournament.getTeamCount()) / Math.log(2));
+        Integer currentRoundNumber = 1;
+        Date rounsStartDate = tournament.getStartAt();
+        while (currentRoundNumber <= roundCount) {
+            RoundRequest roundRequest = new RoundRequest(tournament, currentRoundNumber);
+            Round round = roundService.createRound(roundRequest);
+            Pair<List<Match>, Date> matches =
+                matchService.scheduleMatchesInRounds(round, teams, rounsStartDate);
+            teams = matchService.determineWinners(matches.getFirst());
+            rounsStartDate = matches.getSecond();
+            currentRoundNumber++;
+        }
+    }
+
+    public Tournament startTournamentById(Long id) throws IOException {
+        Tournament tournament = validateTournamentIdExist(id);
+        validateTournamentCapacityBeforeStart(tournament);
+        scheduleTournamentMatches(tournament);
+        List<Team> teams = tournamentParticipantRepository.findAllTeamsByTournamentStatusAndTournament(
+            TournamentParticipantStatus.joined, tournament);
+        for (Team team : teams) {
+            EmailRequestAllUsers emailRequestAllUsers =
+                new EmailRequestAllUsers("Results", "Tournament Results of all teams");
+            matchInformation.sendEmailWithCsvAttachment(team, emailRequestAllUsers, "match_results.csv", tournament);
+        }
+        return tournament;
+    }
+
+    @Scheduled(cron = "0 0 0 * * *")
+    public void startTournaments() throws IOException {
+        Date today = Date.from(Instant.now());
+        List<Tournament> tournaments = tournamentRepository.findByStartAt(today);
+
+        for (Tournament tournament : tournaments) {
+            startTournamentById(tournament.getId());
+        }
     }
 }
