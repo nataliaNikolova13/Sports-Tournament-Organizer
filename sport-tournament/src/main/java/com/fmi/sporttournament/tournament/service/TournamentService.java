@@ -106,10 +106,18 @@ public class TournamentService {
         }
     }
 
-    public boolean isLocationAvailable(Long locationId, Date startAt, Date endAt) {
+    private boolean isLocationAvailable(Long locationId, Date startAt, Date endAt) {
         List<Tournament> conflictingTournaments =
             tournamentRepository.findConflictingTournaments(locationId, startAt, endAt);
         return conflictingTournaments.isEmpty();
+    }
+
+    private Location validateLocationExist(String locationName) {
+        Optional<Location> location = locationRepository.findByLocationName(locationName);
+        if (location.isEmpty()) {
+            throw new IllegalArgumentException("The location " + locationName + " doesn't exist");
+        }
+        return location.get();
     }
 
     private void validateLocationAvailabilityDates(Location location, Date startAt, Date endAt) {
@@ -216,11 +224,12 @@ public class TournamentService {
     }
 
     public List<Tournament> getTournamentBySportType(String sportType) {
-        return tournamentRepository.findBySportType(sportType);
+        return tournamentRepository.findValidTournamentsBySportType(sportType);
     }
 
     public List<Tournament> getTournamentByLocationName(String locationName) {
-        return tournamentRepository.findByLocationLocationName(locationName);
+        Location location = validateLocationExist(locationName);
+        return tournamentRepository.findValidTournamentsByLocation(location);
     }
 
     public Tournament createTournament(TournamentRegistrationRequest tournamentRegistrationRequest) {
