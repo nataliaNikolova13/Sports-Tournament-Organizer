@@ -13,7 +13,7 @@ import java.time.LocalDate;
 public class RegisterUserDto {
     private String fullName;
     private String email;
-    private LocalDate birthdate;
+    private String birthdate;
     private String password;
     private Role role;
 }

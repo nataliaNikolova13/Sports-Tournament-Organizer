@@ -9,6 +9,7 @@ const RegistrationForm = () => {
     email: "",
     password: "",
     role: "Participant",
+    birthdate: "",
   };
   const [formData, setFormData] = useState(initialFormState);
   const [isLogged, setIsLogged] = useState(false);
@@ -42,6 +43,7 @@ const RegistrationForm = () => {
       errors.email = "Email address is invalid";
     }
     if (!formData.password) errors.password = "Password is required";
+    if (!formData.birthdate) errors.birthdate = "Birthday is required";
     return errors;
   };
 
@@ -113,6 +115,16 @@ const RegistrationForm = () => {
                 onChange={handleChange}
               />
               {errors.password && <p className="error">{errors.password}</p>}
+            </div>
+            <div>
+              <label>Birthdate:</label>
+              <input
+                type="birthdate"
+                name="birthdate"
+                value={formData.birthdate}
+                onChange={handleChange}
+              />
+              {errors.birthdate && <p className="error">{errors.birthdate}</p>}
             </div>
             <button type="submit">Register</button>
             {registrationError && <p className="error">{registrationError}</p>}

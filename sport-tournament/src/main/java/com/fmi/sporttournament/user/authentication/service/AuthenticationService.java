@@ -91,7 +91,7 @@ public class AuthenticationService {
         var user = User.builder()
             .fullName(input.getFullName())
             .email(input.getEmail())
-            .birthdate(input.getBirthdate())
+            .birthdate(LocalDate.parse(input.getBirthdate()))
             .password(passwordEncoder.encode(input.getPassword()))
             .role(input.getRole())
             .build();
