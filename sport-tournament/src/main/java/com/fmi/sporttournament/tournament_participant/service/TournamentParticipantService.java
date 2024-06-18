@@ -1,18 +1,16 @@
 package com.fmi.sporttournament.tournament_participant.service;
 
+import com.fmi.sporttournament.email.emails.tournament.TournamentEnrollmentEmail;
 import com.fmi.sporttournament.exception.business.OperationNotAllowedException;
 import com.fmi.sporttournament.exception.resource.ResourceNotFoundException;
 
-import com.fmi.sporttournament.participant.repository.ParticipantRepository;
 import com.fmi.sporttournament.participant.service.ParticipantValidationService;
 
 import com.fmi.sporttournament.team.entity.Team;
-import com.fmi.sporttournament.team.repository.TeamRepository;
 import com.fmi.sporttournament.team.service.TeamValidationService;
 
 import com.fmi.sporttournament.tournament.service.TournamentValidationService;
 import com.fmi.sporttournament.tournament.entity.Tournament;
-import com.fmi.sporttournament.tournament.repository.TournamentRepository;
 
 import com.fmi.sporttournament.tournament_participant.dto.request.TournamentParticipantRequest;
 import com.fmi.sporttournament.tournament_participant.entity.TournamentParticipant;
@@ -39,6 +37,19 @@ public class TournamentParticipantService {
     private final TeamValidationService teamValidationService;
 
     private final ParticipantValidationService participantValidationService;
+
+    private final TournamentEnrollmentEmail tournamentEnrolledEmail;
+
+    private boolean isTeamQueuedTournament(Tournament tournament, Team team) {
+        return tournamentParticipantRepository.existsByTournamentIdAndTeamIdAndStatus(tournament.getId(),
+            team.getId(), TournamentParticipantStatus.queued);
+    }
+
+    private boolean isTeamLeftTournament(Tournament tournament, Team team) {
+        return tournamentParticipantRepository.existsByTournamentIdAndTeamIdAndStatus(tournament.getId(),
+            team.getId(),
+            TournamentParticipantStatus.left);
+    }
 
     public TournamentParticipant createTournamentParticipant(Tournament tournament, Team team) {
         TournamentParticipant tournamentParticipant = new TournamentParticipant();
@@ -86,12 +97,14 @@ public class TournamentParticipantService {
             while (i < queuedTeams.size() && !isTeamJoined) {
                 try {
                     Team teamInQueue = queuedTeams.get(i);
-                    // to do send email
                     tournamentParticipantValidationService.validateNoOverlappingUsersInTeamsInTournaments(teamInQueue,
                         tournament);
+                    tournamentParticipantValidationService.validateTeamMemberCount(tournament, teamInQueue);
+
                     changeStatus(tournament, teamInQueue, TournamentParticipantStatus.joined);
                     isTeamJoined = true;
-                } catch (IllegalStateException e) {
+                    tournamentEnrolledEmail.sendTournamentEnrollmentEmail(teamInQueue, tournament.getTournamentName());
+                } catch (OperationNotAllowedException e) {
                     i++;
                 }
             }
@@ -111,6 +124,7 @@ public class TournamentParticipantService {
         tournamentParticipantValidationService.validateDateOfAdding(tournament);
         tournamentParticipantValidationService.validateSameCategory(tournament, team);
         participantValidationService.validateAllParticipantsInTeamWillBeInYouthCategory(tournament, team);
+        tournamentParticipantValidationService.validateTeamMemberCount(tournament, team);
 
         if (tournamentParticipantValidationService.isTeamJoinedTournament(tournament, team)) {
             throw new OperationNotAllowedException(
@@ -118,14 +132,14 @@ public class TournamentParticipantService {
                     tournament.getTournamentName());
         }
 
-        if (tournamentParticipantValidationService.isTeamQueuedTournament(tournament, team)) {
+        if (isTeamQueuedTournament(tournament, team)) {
             throw new OperationNotAllowedException(
                 "Team  " + team.getName() + " is already queued in the tournament " + tournament.getTournamentName());
         }
 
         tournamentParticipantValidationService.validateNoOverlappingUsersInTeamsInTournaments(team, tournament);
 
-        if (tournamentParticipantValidationService.isTeamLeftTournament(tournament, team)) {
+        if (isTeamLeftTournament(tournament, team)) {
             return rejoinTournament(tournament, team);
         }
 
@@ -144,7 +158,7 @@ public class TournamentParticipantService {
                 "Team " + team.getName() + " doesn't participate in the tournament " + tournament.getTournamentName());
         }
 
-        if (tournamentParticipantValidationService.isTeamLeftTournament(tournament, team)) {
+        if (isTeamLeftTournament(tournament, team)) {
             throw new OperationNotAllowedException(
                 "Team " + team.getName() + " has already left the tournament " + tournament.getTournamentName());
         }

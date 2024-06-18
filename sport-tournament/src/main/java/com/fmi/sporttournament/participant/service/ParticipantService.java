@@ -74,13 +74,13 @@ public class ParticipantService {
     public Participant addParticipantToTeam(ParticipantRequest participantRequest) {
         User user = userValidationService.validateUserIdExist(participantRequest.getUserId());
         Team team = teamValidationService.validateTeamIdExist(participantRequest.getTeamId());
+        participantValidationService.checkIfNoUserLeftInTeam(team);
 
         if (isUserAlreadyInTeam(user, team)) {
             throw new OperationNotAllowedException(
                 "User with username " + user.getUsername() + " is already a participant of the team");
         }
 
-        participantValidationService.checkIfNoUserLeftInTeam(team);
         tournamentParticipantValidationService.validateTeamNotParticipateInTournament(team);
         participantValidationService.validateUserAgeAndTeamCategory(user, team);
 

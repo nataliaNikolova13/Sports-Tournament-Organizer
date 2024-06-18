@@ -6,6 +6,7 @@ import com.fmi.sporttournament.participant.repository.ParticipantRepository;
 import com.fmi.sporttournament.team.entity.Team;
 import com.fmi.sporttournament.user.entity.User;
 import com.fmi.sporttournament.user.repository.UserRepositoty;
+import com.fmi.sporttournament.user.service.UserValidationService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class EmailService {
     private JavaMailSender emailSender;
     private final UserRepositoty userRepository;
     private final ParticipantRepository participantRepository;
+    private final UserValidationService userValidationService;
 
     @Value("${spring.mail.username}")
     private String from;
@@ -42,19 +44,11 @@ public class EmailService {
         emailSender.send(message);
     }
 
-    private User validateUserEmailExist(String email) {
-        Optional<User> user = userRepository.findByEmail(email);
-        if (user.isEmpty()) {
-            throw new IllegalArgumentException("User with email " + email + " doesn't exist");
-        }
-        return user.get();
-    }
-
     public void sendEmailToUserByEmail(EmailRequestOneUser email) {
         String to = email.getTo();
         String subject = email.getSubject();
         String text = email.getText();
-        User user = validateUserEmailExist(to);
+        User user = userValidationService.validateUserEmailExist(to);
         sendSimpleMessage(user.getEmail(), subject, text);
     }
 
@@ -62,6 +56,16 @@ public class EmailService {
         String subject = email.getSubject();
         String text = email.getText();
         List<User> users = userRepository.findAll();
+        for (User user : users) {
+            sendSimpleMessage(user.getEmail(), subject, text);
+        }
+    }
+
+    public void sendEmailToAllUsersInTeam(Team team, EmailRequestAllUsers email) {
+        String subject = email.getSubject();
+        String text = email.getText();
+
+        List<User> users = participantRepository.findUsersByTeam(team);
         for (User user : users) {
             sendSimpleMessage(user.getEmail(), subject, text);
         }
@@ -89,11 +93,12 @@ public class EmailService {
         String to = email.getTo();
         String subject = email.getSubject();
         String text = email.getText();
-        User user = validateUserEmailExist(to);
+        User user = userValidationService.validateUserEmailExist(to);
         sendEmailWithAttachment(user.getEmail(), subject, text, pathToAttachment);
     }
 
-    public void sendEmailToUserInTeamWithAttachment(Team team, EmailRequestAllUsers email, String pathToAttachment) {
+    public void sendEmailToAllUsersInTeamWithAttachment(Team team, EmailRequestAllUsers email,
+                                                        String pathToAttachment) {
         String subject = email.getSubject();
         String text = email.getText();
 

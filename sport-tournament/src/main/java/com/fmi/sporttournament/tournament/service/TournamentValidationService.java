@@ -47,7 +47,6 @@ public class TournamentValidationService {
         return tournament.get();
     }
 
-
     public void validateRequestDates(Date startAt, Date endAt) {
         if (endAt.toInstant().isBefore(startAt.toInstant())) {
             throw new OperationNotAllowedException("The end date can not be before the start date of the tournament");

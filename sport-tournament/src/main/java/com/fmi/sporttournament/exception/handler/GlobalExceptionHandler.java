@@ -8,7 +8,9 @@ import com.fmi.sporttournament.exception.business.OperationNotAllowedException;
 import com.fmi.sporttournament.exception.resource.ResourceAlreadyExistsException;
 import com.fmi.sporttournament.exception.resource.ResourceNotFoundException;
 import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.mail.SendFailedException;
 import jakarta.validation.ConstraintViolationException;
+import org.eclipse.angus.mail.smtp.SMTPAddressFailedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -92,6 +94,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<String> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(SMTPAddressFailedException.class)
+    public ResponseEntity<String> handleSMTPAddressFailedException(SMTPAddressFailedException ex) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(SendFailedException.class)
+    public ResponseEntity<String> handleSendFailedException(SendFailedException ex) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(ex.getMessage());
     }
 
     @ExceptionHandler(RuntimeException.class)

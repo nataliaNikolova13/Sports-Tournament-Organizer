@@ -1,9 +1,8 @@
 package com.fmi.sporttournament.tournament.service;
 
 import com.fmi.sporttournament.email.dto.request.EmailRequestAllUsers;
-import com.fmi.sporttournament.email.service.EmailService;
-
-import com.fmi.sporttournament.export.match.MatchInformation;
+import com.fmi.sporttournament.email.emails.match.MatchInformation;
+import com.fmi.sporttournament.email.emails.tournament.TournamentCancellationEmail;
 
 import com.fmi.sporttournament.match.entity.Match;
 import com.fmi.sporttournament.match.service.MatchService;
@@ -28,6 +27,7 @@ import com.fmi.sporttournament.tournament_participant.entity.status.TournamentPa
 import com.fmi.sporttournament.tournament_participant.repository.TournamentParticipantRepository;
 
 import com.fmi.sporttournament.tournament_participant.service.TournamentParticipantValidationService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.util.Pair;
@@ -55,15 +55,16 @@ public class TournamentService {
 
     private final MatchInformation matchInformation;
 
-    private final EmailService emailService;
-
     private final TournamentParticipantValidationService tournamentParticipantValidationService;
 
     private final LocationValidationService locationValidationService;
 
+    private final TournamentCancellationEmail tournamentCancellationEmail;
+
     public List<Tournament> getAllTournaments() {
         return tournamentRepository.findAll();
     }
+
     public List<Tournament> getAllValidTournaments() {
         return tournamentRepository.findValidTournaments();
     }
@@ -125,17 +126,26 @@ public class TournamentService {
         return tournamentRepository.save(tournament);
     }
 
+    private void sendTournamentCancellationEmailToParticipants(Tournament tournament){
+        List<Team> teams = tournamentParticipantRepository.findAllEnrolledTeamsInTournament(tournament);
+        for (Team team : teams) {
+            tournamentCancellationEmail.sendTournamentCancellationEmail(team, tournament.getTournamentName());
+        }
+    }
+
+    @Transactional
     public void deleteTournamentById(Long id) {
         Tournament tournament = tournamentValidationService.validateTournamentIdExist(id);
-        //update teams
         tournamentValidationService.validateDateOfUpdate(tournament.getStartAt());
+        sendTournamentCancellationEmailToParticipants(tournament);
         tournamentRepository.deleteById(id);
     }
 
+    @Transactional
     public void deleteTournamentByTournamentName(String tournamentName) {
         Tournament tournament = tournamentValidationService.validateTournamentNameExist(tournamentName);
-        //update teams
         tournamentValidationService.validateDateOfUpdate(tournament.getStartAt());
+        sendTournamentCancellationEmailToParticipants(tournament);
         tournamentRepository.deleteById(tournament.getId());
     }
 
@@ -451,6 +461,7 @@ public class TournamentService {
         }
     }
 
+    @Transactional
     public Tournament startTournamentById(Long id) throws IOException {
         Tournament tournament = tournamentValidationService.validateTournamentIdExist(id);
         tournamentParticipantValidationService.validateTournamentCapacityBeforeStart(tournament);

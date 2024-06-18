@@ -29,20 +29,10 @@ import java.util.Optional;
 public class TournamentParticipantValidationService {
     private final TournamentParticipantRepository tournamentParticipantRepository;
     private final ParticipantRepository participantRepository;
+
     public boolean isTeamJoinedTournament(Tournament tournament, Team team) {
         return tournamentParticipantRepository.existsByTournamentIdAndTeamIdAndStatus(tournament.getId(),
             team.getId(), TournamentParticipantStatus.joined);
-    }
-
-    public boolean isTeamQueuedTournament(Tournament tournament, Team team) {
-        return tournamentParticipantRepository.existsByTournamentIdAndTeamIdAndStatus(tournament.getId(),
-            team.getId(), TournamentParticipantStatus.queued);
-    }
-
-    public boolean isTeamLeftTournament(Tournament tournament, Team team) {
-        return tournamentParticipantRepository.existsByTournamentIdAndTeamIdAndStatus(tournament.getId(),
-            team.getId(),
-            TournamentParticipantStatus.left);
     }
 
     public void validateDateOfAdding(Tournament tournament) {
@@ -67,6 +57,14 @@ public class TournamentParticipantValidationService {
         if (!tournament.getTournamentCategory().name().equals(team.getCategory().name())) {
             throw new OperationNotAllowedException(
                 "The team " + team.getName() + " isn't competing in the same category");
+        }
+    }
+
+    public void validateTeamMemberCount(Tournament tournament, Team team) {
+        if (tournament.getTeamMemberCount() != participantRepository.findUsersByTeam(team).size()) {
+            throw new OperationNotAllowedException(
+                "The count of the members of the team " + team.getName() + " is not supported for the tournament " +
+                    tournament.getTournamentName());
         }
     }
 
@@ -99,7 +97,7 @@ public class TournamentParticipantValidationService {
                 for (Tournament userTeamTournament : tournaments) {
                     if (areTournamentsOverlapping(userTeamTournament, tournament)) {
                         throw new OperationNotAllowedException(
-                            "Adding team " + team.getName() + "to the tournament " + tournament.getTournamentName() +
+                            "Adding team " + team.getName() + " to the tournament " + tournament.getTournamentName() +
                                 " conflicts with (an)other tournament(s) where the user " +
                                 user.getUsername() +
                                 " is participating");
