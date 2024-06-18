@@ -1,5 +1,7 @@
 package com.fmi.sporttournament.venue.service;
 
+import com.fmi.sporttournament.exception.resource.ResourceNotFoundException;
+import com.fmi.sporttournament.user.entity.User;
 import com.fmi.sporttournament.venue.dto.request.VenueRequest;
 
 import com.fmi.sporttournament.venue.entity.Venue;
@@ -19,13 +21,14 @@ import java.util.Optional;
 public class VenueService {
     private final VenueRepository venueRepository;
     private final VenueMapper venueMapper;
+    private final VenueValidationService venueValidationService;
 
     public List<Venue> getAllVenues() {
         return venueRepository.findAll();
     }
 
-    public Optional<Venue> getVenueById(Long id) {
-        return venueRepository.findById(id);
+    public Venue getVenueById(Long id) {
+        return venueValidationService.validateVenueExistById(id);
     }
 
     public List<Venue> getAllVenuesInLocation(String locationName) {
@@ -37,10 +40,6 @@ public class VenueService {
         return venueRepository.save(venue);
     }
 
-  /*  public void deleteVenueById(Long id) {
-        venueRepository.deleteById(id);
-    }
-*/
     public void deleteExcessVenues(String locationName, Long currentVenueCount, Long newVenueCount) {
         if (currentVenueCount > newVenueCount) {
             for (long i = newVenueCount + 1; i <= currentVenueCount; i++) {

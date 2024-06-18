@@ -21,9 +21,13 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
     Optional<Participant> findByUserAndTeam(User user, Team team);
     @Query("SELECT COUNT(p) FROM Participant p WHERE p.team = :team AND p.status = :status")
     int countParticipantsByTeamAndStatus(Team team, ParticipantStatus status);
+
     @Query("SELECT p.team FROM Participant p WHERE p.user = :user AND p.status = 'joined'")
     List<Team> findTeamsByUser(User user);
 
     @Query("SELECT p.user FROM Participant p WHERE p.team = :team AND p.status = 'joined'")
     List<User> findUsersByTeam(Team team);
+
+    @Query("SELECT DISTINCT p.team FROM Participant p WHERE p.status = 'joined'")
+    List<Team> findTeamsWithJoinedParticipants();
 }

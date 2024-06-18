@@ -2,16 +2,16 @@ package com.fmi.sporttournament.location.controller;
 
 import com.fmi.sporttournament.location.dto.request.LocationRequest;
 import com.fmi.sporttournament.location.dto.response.LocationResponse;
-
 import com.fmi.sporttournament.location.entity.Location;
-
 import com.fmi.sporttournament.location.mapper.LocationMapper;
-
 import com.fmi.sporttournament.location.service.LocationService;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,8 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/location")
@@ -36,131 +34,79 @@ public class LocationController {
 
     @GetMapping("/{id}")
     public ResponseEntity<LocationResponse> getLocationById(@PathVariable Long id) {
-        Optional<Location> locationOptional = locationService.getLocationById(id);
+        Location location = locationService.getLocationById(id);
         Long venueCount = locationService.countVenuesByLocationId(id);
-        return locationOptional.map(
-                location -> new ResponseEntity<>(locationMapper.locationToResponse(location, venueCount), HttpStatus.OK))
-            .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        return ResponseEntity.ok(locationMapper.locationToResponse(location, venueCount));
     }
 
     @GetMapping("/name/{locationName}")
     public ResponseEntity<LocationResponse> getLocationByName(@PathVariable String locationName) {
-        Optional<Location> locationOptional = locationService.getLocationByName(locationName);
-        Long venueCount = locationService.countVenuesByLocationName(locationName);
-        return locationOptional.map(
-                location -> new ResponseEntity<>(locationMapper.locationToResponse(location, venueCount), HttpStatus.OK))
-            .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        Location location = locationService.getLocationByName(locationName);
+        Long venueCount = locationService.countVenuesByLocationId(location.getId());
+        return ResponseEntity.ok(locationMapper.locationToResponse(location, venueCount));
     }
 
     @PostMapping
-    public ResponseEntity<LocationResponse> createLocation(@RequestBody LocationRequest locationRequest) {
-        try {
-            Location location = locationService.createLocation(locationRequest);
-            Long locationId = location.getId();
-            Long venueCount = locationService.countVenuesByLocationId(locationId);
-            return ResponseEntity.ok(locationMapper.locationToResponse(location, venueCount));
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<LocationResponse> createLocation(@RequestBody @Valid LocationRequest locationRequest) {
+        Location location = locationService.createLocation(locationRequest);
+        Long locationId = location.getId();
+        Long venueCount = locationService.countVenuesByLocationId(locationId);
+        return ResponseEntity.ok(locationMapper.locationToResponse(location, venueCount));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteLocationById(@PathVariable Long id) {
-        try {
-            locationService.deleteLocation(id);
-            return ResponseEntity.ok().build();
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        locationService.deleteLocation(id);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/name/{locationName}")
     public ResponseEntity<Void> deleteLocationByLocationName(@PathVariable String locationName) {
-        try {
-            locationService.deleteByLocationName(locationName);
-            return ResponseEntity.ok().build();
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        locationService.deleteByLocationName(locationName);
+        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<LocationResponse> updateLocation(@PathVariable Long id,
-                                                           @RequestBody LocationRequest locationRequest) {
-        try {
-            Location location = locationService.updateLocation(id, locationRequest);
-            Long venueCount = locationService.countVenuesByLocationId(id);
-            return ResponseEntity.ok(locationMapper.locationToResponse(location, venueCount));
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+                                                           @RequestBody @Valid LocationRequest locationRequest) {
+        Location location = locationService.updateLocation(id, locationRequest);
+        Long venueCount = locationService.countVenuesByLocationId(id);
+        return ResponseEntity.ok(locationMapper.locationToResponse(location, venueCount));
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<LocationResponse> updateLocationNameById(@PathVariable Long id,
                                                                    @RequestParam(name = "new-location-name")
-                                                                   String newLocationName) {
-        try {
-            Location location = locationService.updateLocationNameById(id, newLocationName);
-            Long venueCount = locationService.countVenuesByLocationName(newLocationName);
-            return ResponseEntity.ok(locationMapper.locationToResponse(location, venueCount));
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+                                                                   @NotNull @NotBlank String newLocationName) {
+        Location location = locationService.updateLocationNameById(id, newLocationName);
+        Long venueCount = locationService.countVenuesByLocationName(newLocationName);
+        return ResponseEntity.ok(locationMapper.locationToResponse(location, venueCount));
     }
 
     @PatchMapping("/name/{currentLocationName}")
     public ResponseEntity<LocationResponse> updateLocationNameByLocationName(@PathVariable String currentLocationName,
                                                                              @RequestParam(name = "new-location-name")
-                                                                             String newLocationName) {
-        try {
-            Location location = locationService.updateLocationNameByLocationName(currentLocationName, newLocationName);
-            Long venueCount = locationService.countVenuesByLocationName(newLocationName);
-            return ResponseEntity.ok(locationMapper.locationToResponse(location, venueCount));
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+                                                                             @NotNull @NotBlank String newLocationName) {
+        Location location = locationService.updateLocationNameByLocationName(currentLocationName, newLocationName);
+        Long venueCount = locationService.countVenuesByLocationName(newLocationName);
+        return ResponseEntity.ok(locationMapper.locationToResponse(location, venueCount));
     }
 
-    @PatchMapping("{id}/count")
+    @PatchMapping("{id}/venues")
     public ResponseEntity<LocationResponse> updateVenueCountById(@PathVariable Long id,
                                                                  @RequestParam(name = "new-venue-count")
-                                                                 Long newVenueCount) {
-        try {
-            Location location = locationService.updateVenueCountById(id, newVenueCount);
-            Long venueCount = locationService.countVenuesByLocationId(id);
-            return ResponseEntity.ok(locationMapper.locationToResponse(location, venueCount));
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+                                                                 @Min(1) Long newVenueCount) {
+        Location location = locationService.updateVenueCountById(id, newVenueCount);
+        Long venueCount = locationService.countVenuesByLocationId(id);
+        return ResponseEntity.ok(locationMapper.locationToResponse(location, venueCount));
     }
 
-    @PatchMapping("name/{locationName}/count")
+    @PatchMapping("name/{locationName}/venues")
     public ResponseEntity<LocationResponse> updateVenueCountByLocationName(@PathVariable String locationName,
                                                                            @RequestParam(name = "new-venue-count")
-                                                                           Long newVenueCount) {
-        try {
-            Location location = locationService.updateVenueCountByLocationName(locationName, newVenueCount);
-            Long venueCount = locationService.countVenuesByLocationName(locationName);
-            return ResponseEntity.ok(locationMapper.locationToResponse(location, venueCount));
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+                                                                           @Min(1) Long newVenueCount) {
+        Location location = locationService.updateVenueCountByLocationName(locationName, newVenueCount);
+        Long venueCount = locationService.countVenuesByLocationName(locationName);
+        return ResponseEntity.ok(locationMapper.locationToResponse(location, venueCount));
     }
 }
