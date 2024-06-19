@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
+import "./TeamDetail.css";
 
 const TeamDetail = ({ decodeToken }) => {
   const { teamId } = useParams();
@@ -96,10 +97,33 @@ const TeamDetail = ({ decodeToken }) => {
     }
   };
 
+  const handleDeleteParticipant = async () => {
+    setAdded(true);
+    try {
+      const token = localStorage.getItem("token");
+      console.log(selectedUser);
+      await axios.delete("http://localhost:8080/participant", {
+        data: {
+          userId: selectedUser,
+          teamId: teamId,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      setAdded(false);
+      //   selectedUser(null);
+    } catch (err) {
+      setError("There was an error deleting the participant.");
+    }
+  };
+
   if (error) return <div>{error}</div>;
 
   return (
-    <div>
+    <div className="team-detail-container">
       <h2>{team.name}</h2>
       <p>Category: {team.category}</p>
       <h2>Team Participants</h2>
@@ -110,7 +134,7 @@ const TeamDetail = ({ decodeToken }) => {
           </li>
         ))}
       </ul>
-      <div>
+      <div className="participant-section">
         <h3>Add Participant</h3>
         <select
           value={selectedUser}
@@ -124,7 +148,21 @@ const TeamDetail = ({ decodeToken }) => {
           ))}
         </select>
         <button onClick={handleAddParticipant}>Add Participant</button>
+        <h3>Delete Participant</h3>
+        <select
+          value={selectedUser}
+          onChange={(e) => setSelectedUser(e.target.value)}
+        >
+          <option value="">Select a user</option>
+          {users.map((user) => (
+            <option key={user.id} value={user.id}>
+              {user.fullName}
+            </option>
+          ))}
+        </select>
+        <button onClick={handleDeleteParticipant}>Delete Participant</button>
       </div>
+      {error && <div className="error-message">{error}</div>}
     </div>
   );
 };
