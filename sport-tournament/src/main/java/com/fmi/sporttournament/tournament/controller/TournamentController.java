@@ -356,4 +356,9 @@ public class TournamentController {
     public List<String> getTournamentCategories() {
         return tournamentService.getTournamentCategories();
     }
+
+    @GetMapping
+    public List<Tournament> getAllTournaments() {
+        return tournamentService.getAllTournaments();
+    }
 }

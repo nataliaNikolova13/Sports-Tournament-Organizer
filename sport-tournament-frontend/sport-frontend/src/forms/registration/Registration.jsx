@@ -119,7 +119,7 @@ const RegistrationForm = () => {
             <div>
               <label>Birthdate:</label>
               <input
-                type="birthdate"
+                type="date"
                 name="birthdate"
                 value={formData.birthdate}
                 onChange={handleChange}

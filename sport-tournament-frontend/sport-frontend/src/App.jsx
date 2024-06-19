@@ -10,6 +10,7 @@ import UserProfile from "./profileInfo/user/UserProfile";
 import { jwtDecode } from "jwt-decode";
 import TeamPage from "./pages/team/TeamPage";
 import TeamDetail from "./pages/team/TeamDetail";
+import TournamentPage from "./pages/tournament/TournamentPage";
 
 function App() {
   const decodeToken = () => {
@@ -42,6 +43,10 @@ function App() {
           path="/teams/:teamId"
           element={<TeamDetail>decodeToken={decodeToken}</TeamDetail>}
         />
+        <Route
+          path="/tournaments"
+          element={<TournamentPage decodeToken={decodeToken}></TournamentPage>}
+        ></Route>
       </Routes>
     </Router>
   );
