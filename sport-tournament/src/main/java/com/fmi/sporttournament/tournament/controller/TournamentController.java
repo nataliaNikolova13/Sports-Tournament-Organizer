@@ -351,4 +351,9 @@ public class TournamentController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
+    @GetMapping("/categories")
+    public List<String> getTournamentCategories() {
+        return tournamentService.getTournamentCategories();
+    }
 }

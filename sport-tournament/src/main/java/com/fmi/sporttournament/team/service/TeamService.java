@@ -1,5 +1,6 @@
 package com.fmi.sporttournament.team.service;
 
+import com.fmi.sporttournament.participant.entity.Participant;
 import com.fmi.sporttournament.participant.repository.ParticipantRepository;
 import com.fmi.sporttournament.team.dto.request.TeamRequest;
 
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -165,5 +167,16 @@ public class TeamService {
     public Team updateCategoryByTeamName(String teamName, TeamCategory teamCategory) {
         Team team = validateTeamNameExist(teamName);
         return updateCategory(team, teamCategory);
+    }
+
+    public List<Team> getTeamsForUser(User user) {
+        List<Participant> participants = participantRepository.findByUser(user);
+        return participants.stream()
+                .map(Participant::getTeam)
+                .collect(Collectors.toList());
+    }
+
+    public Optional<Team> getTeamById(Long teamId) {
+        return teamRepository.findById(teamId);
     }
 }

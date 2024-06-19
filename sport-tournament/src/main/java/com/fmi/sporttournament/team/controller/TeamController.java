@@ -5,10 +5,15 @@ import com.fmi.sporttournament.team.dto.request.TeamRequest;
 import com.fmi.sporttournament.team.entity.Team;
 import com.fmi.sporttournament.team.entity.category.TeamCategory;
 import com.fmi.sporttournament.team.service.TeamService;
+import com.fmi.sporttournament.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -133,6 +138,15 @@ public class TeamController {
         }
     }
 
-    //to add endpoint for get categories
-    // to add endpoint for get all of the matches an user is in
+    @GetMapping("/my-teams")
+    public List<Team> getTeamsForCurrentUser(@AuthenticationPrincipal User user) {
+        return teamService.getTeamsForUser(user);
+    }
+
+    @GetMapping("/{teamId}")
+    public ResponseEntity<Team> getTeamById(@PathVariable Long teamId) {
+        Optional<Team> team = teamService.getTeamById(teamId);
+        return team.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 }

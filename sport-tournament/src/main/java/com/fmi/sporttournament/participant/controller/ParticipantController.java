@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/participant")
@@ -40,5 +42,11 @@ public class ParticipantController {
         } catch (Exception e){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+    }
+
+    @GetMapping("/{teamId}")
+    public ResponseEntity<List<Participant>> getParticipantsByTeamId(@PathVariable Long teamId) {
+        List<Participant> participants = participantService.getParticipantsByTeamId(teamId);
+        return ResponseEntity.ok(participants);
     }
 }

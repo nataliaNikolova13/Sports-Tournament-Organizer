@@ -6,6 +6,7 @@ const CreateTeam = () => {
   const [showForm, setShowForm] = useState(false);
   const [hideButton, setHideButton] = useState(true);
   const [categories, setCategories] = useState([]);
+  const [errors, setError] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     category: "amateur",
@@ -16,7 +17,7 @@ const CreateTeam = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          "http://localhost:8080/teams/categories",
+          "http://localhost:8080/tournament/categories",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -24,26 +25,31 @@ const CreateTeam = () => {
           }
         );
         setCategories(response.data);
-        console.log(response.data);
       } catch (error) {
-        console.error("Error with fetching dropdown data", error);
+        console.error("There was an error fetching the categories!", error);
       }
     };
 
     fetchCategories();
-  }, [showForm]);
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
       [name]: value,
-    });
+    }));
   };
 
   const handleHide = () => {
     setShowForm(true);
     setHideButton(false);
+  };
+
+  const handleCancel = () => {
+    setShowForm(false);
+    setHideButton(true);
   };
 
   const handleSubmit = async (e) => {
@@ -65,6 +71,7 @@ const CreateTeam = () => {
       setFormData({ name: "", category: "amateur" });
     } catch (error) {
       console.error("There was an error creating the team!", error);
+      setError(true);
     }
   };
 
@@ -103,10 +110,15 @@ const CreateTeam = () => {
           </div>
           <div className="buttons">
             <button type="submit">Submit</button>
-            <button type="button" onClick={() => setShowForm(false)}>
+            <button type="button" onClick={() => handleCancel()}>
               Cancel
             </button>
           </div>
+          {errors && (
+            <div>
+              <p>There was an error when creating a team</p>
+            </div>
+          )}
         </form>
       )}
     </div>

@@ -19,6 +19,7 @@ import com.fmi.sporttournament.location.entity.Location;
 
 import com.fmi.sporttournament.tournament.entity.Tournament;
 
+import com.fmi.sporttournament.tournament.entity.category.TournamentCategory;
 import com.fmi.sporttournament.tournament.mapper.TournamentMapper;
 
 import com.fmi.sporttournament.location.repository.LocationRepository;
@@ -38,9 +39,11 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -578,5 +581,11 @@ public class TournamentService {
         for (Tournament tournament : tournaments) {
             startTournamentById(tournament.getId());
         }
+    }
+
+    public List<String> getTournamentCategories() {
+        return Arrays.stream(TournamentCategory.values())
+                .map(Enum::name)
+                .collect(Collectors.toList());
     }
 }
