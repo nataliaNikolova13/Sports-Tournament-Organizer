@@ -56,3 +56,14 @@ button[type="submit"] {
 button[type="submit"]:hover {
   background-color: #45a049;
 }
+
+.btn-show {
+  color: black;
+  background-color: transparent;
+  padding: 0px;
+}
+
+.btn-show:hover {
+  color: black;
+  background-color: transparent;
+}
