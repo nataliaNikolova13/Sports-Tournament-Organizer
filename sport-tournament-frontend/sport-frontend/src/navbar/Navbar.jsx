@@ -27,7 +27,7 @@ const Navbar = () => {
     const token = localStorage.getItem("token");
     if (token) {
       const decoded = jwtDecode(token);
-      if (decoded.role === "ROLE_Admin") {
+      if (decoded.role === "[ROLE_Admin]") {
         setIsAdmin(true);
       }
     }

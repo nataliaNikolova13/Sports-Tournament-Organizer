@@ -27,7 +27,10 @@ const CreateTournamentForm = () => {
     if (token) {
       const decodedToken = jwtDecode(token);
       console.log("token");
-      if (decodedToken.role === "[ROLE_Organizer]") {
+      if (
+        decodedToken.role === "[ROLE_Organizer]" ||
+        decodedToken.role === "[ROLE_Admin]"
+      ) {
         setIsOrganizer(true);
       }
     }
