@@ -52,6 +52,8 @@ const AdminPage = ({ decodeToken }) => {
         }
       );
       console.log("User role updated:", response.data);
+      setSelectedRole("");
+      setSelectedUser("");
     } catch (error) {
       console.error("Error updating user role:", error);
     }

@@ -62,8 +62,8 @@ public class UserController {
     }
 
     @PutMapping("/role/{userId}")
-    public ResponseEntity<UserDto> updateUserRole(@PathVariable Long userId,
-                                                  @RequestBody ChangeRoleRequest changeRoleRequest) {
+    public ResponseEntity<UserDto> updateUserRole(@PathVariable Long userId, @RequestBody ChangeRoleRequest changeRoleRequest) {
+        System.out.println("here");
         Optional<User> userOptional = userService.updateUserRole(userId, changeRoleRequest);
         if (userOptional.isPresent()) {
             User user = userOptional.get();
