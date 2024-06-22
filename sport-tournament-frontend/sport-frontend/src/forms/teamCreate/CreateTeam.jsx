@@ -76,7 +76,7 @@ const CreateTeam = () => {
   };
 
   return (
-    <div>
+    <div className="form-create-team">
       {hideButton && <button onClick={handleHide}>Create Team</button>}
 
       {showForm && (
