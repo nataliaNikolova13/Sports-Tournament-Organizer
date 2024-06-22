@@ -5,6 +5,7 @@ import "./CreateTournamentForm.css";
 
 const CreateTournamentForm = () => {
   const [categories, setCategories] = useState([]);
+  const [status, setStatus] = useState("");
   const [locations, setLocations] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [isOrganizer, setIsOrganizer] = useState(false);
@@ -96,8 +97,10 @@ const CreateTournamentForm = () => {
         }
       );
       console.log("Tournament created:", response.data);
+      setStatus("Tournament was created");
     } catch (err) {
       console.error("Error creating tournament:", err);
+      setStatus("Error when creating tournament");
     }
   };
 
@@ -244,6 +247,7 @@ const CreateTournamentForm = () => {
             </div>
             <button type="submit">Create Tournament</button>
           </form>
+          <p>{status}</p>
         </>
       )}
     </div>
