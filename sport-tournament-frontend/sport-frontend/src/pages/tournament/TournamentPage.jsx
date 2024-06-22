@@ -40,33 +40,6 @@ const TournamentPage = ({ decodeToken }) => {
             <p>
               <strong>Category:</strong> {tournament.tournamentCategory}
             </p>
-            {/* <p>
-              <strong>Location:</strong> {tournament.location.name}
-            </p>
-            <p>
-              <strong>Start Date:</strong>{" "}
-              {new Date(tournament.startAt).toLocaleDateString()}
-            </p>
-            <p>
-              <strong>End Date:</strong>{" "}
-              {new Date(tournament.endAt).toLocaleDateString()}
-            </p>
-            <p>
-              <strong>Start Hour:</strong> {tournament.startHour}
-            </p>
-            <p>
-              <strong>End Hour:</strong> {tournament.endHour}
-            </p>
-            <p>
-              <strong>Team Count:</strong> {tournament.teamCount}
-            </p>
-            <p>
-              <strong>Match Duration:</strong> {tournament.matchDuration}{" "}
-              minutes
-            </p>
-            <p>
-              <strong>Team Members Count:</strong> {tournament.teamMemberCount}
-            </p> */}
             <Link to={`/tournament/${tournament.id}`}>View Details</Link>
           </div>
         ))}
