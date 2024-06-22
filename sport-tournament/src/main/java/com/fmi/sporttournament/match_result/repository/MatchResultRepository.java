@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface MatchResultRepository extends JpaRepository<MatchResult, Long> {
     Optional<MatchResult> findById(Long id);
 
-    Optional<MatchResult> findByMatchId(Long id);
+    MatchResult findByMatchId(Long matchId);
 
     @Query("SELECT mr FROM MatchResult mr WHERE mr.match.round.tournament = :tournament")
     List<MatchResult> findAllByTournament(Tournament tournament);

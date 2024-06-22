@@ -92,9 +92,12 @@ public class TournamentParticipantService {
     }
 
     private void validateTeamMemberCount(Tournament tournament, Team team) {
-        Integer teamMemberCount =
+        int teamMemberCount =
             participantRepository.countParticipantsByTeamAndStatus(team, ParticipantStatus.joined);
-        if (!tournament.getTeamMemberCount().equals(teamMemberCount)) {
+        System.out.println(tournament.getTeamMemberCount());
+        System.out.println(teamMemberCount);
+        System.out.println(tournament.getTeamMemberCount() == teamMemberCount);
+        if (tournament.getTeamMemberCount() != teamMemberCount) {
             throw new IllegalArgumentException(
                 "The count of the members in the team isn't supported for the tournament");
         }

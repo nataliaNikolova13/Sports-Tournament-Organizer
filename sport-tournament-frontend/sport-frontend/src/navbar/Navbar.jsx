@@ -56,16 +56,19 @@ const Navbar = () => {
               <Link to="/tournaments">Tournaments</Link>
             </li>
             <li className="nav-item">
+              <Link to="/results">Results</Link>
+            </li>
+            {isAdmin && (
+              <li className="nav-item">
+                <Link to="/admin">Admin</Link>
+              </li>
+            )}
+            <li className="nav-item">
               <button className="logout" onClick={handleLogout}>
                 Logout
               </button>
             </li>
           </>
-        )}
-        {isAdmin && (
-          <li className="nav-item">
-            <Link to="/admin">Admin</Link>
-          </li>
         )}
       </ul>
     </nav>

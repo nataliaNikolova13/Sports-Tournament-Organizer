@@ -21,7 +21,6 @@ const TeamPage = ({ decodeToken }) => {
           }
         );
         setTeams(response.data);
-        // console.log(response.data);
       } catch (err) {
         setError("There was an error fetching the teams.");
       }
