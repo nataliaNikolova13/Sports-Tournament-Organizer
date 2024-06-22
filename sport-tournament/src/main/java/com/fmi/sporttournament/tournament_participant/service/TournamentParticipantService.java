@@ -1,26 +1,27 @@
 package com.fmi.sporttournament.tournament_participant.service;
 
-import com.fmi.sporttournament.participant.entity.status.ParticipantStatus;
-import com.fmi.sporttournament.participant.repository.ParticipantRepository;
-import com.fmi.sporttournament.tournament.entity.category.TournamentCategory;
-import com.fmi.sporttournament.tournament_participant.dto.request.TournamentParticipantRequest;
+import com.fmi.sporttournament.email.emails.tournament.TournamentEnrollmentEmail;
+import com.fmi.sporttournament.exception.business.OperationNotAllowedException;
+import com.fmi.sporttournament.exception.resource.ResourceNotFoundException;
+
+import com.fmi.sporttournament.participant.service.ParticipantValidationService;
+
 import com.fmi.sporttournament.team.entity.Team;
+import com.fmi.sporttournament.team.service.TeamValidationService;
+
+import com.fmi.sporttournament.tournament.service.TournamentValidationService;
 import com.fmi.sporttournament.tournament.entity.Tournament;
+
+import com.fmi.sporttournament.tournament_participant.dto.request.TournamentParticipantRequest;
 import com.fmi.sporttournament.tournament_participant.entity.TournamentParticipant;
-
 import com.fmi.sporttournament.tournament_participant.entity.status.TournamentParticipantStatus;
-
-import com.fmi.sporttournament.team.repository.TeamRepository;
 import com.fmi.sporttournament.tournament_participant.repository.TournamentParticipantRepository;
-import com.fmi.sporttournament.tournament.repository.TournamentRepository;
 
-import com.fmi.sporttournament.user.entity.User;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -29,14 +30,15 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TournamentParticipantService {
     private final TournamentParticipantRepository tournamentParticipantRepository;
-    private final TournamentRepository tournamentRepository;
-    private final TeamRepository teamRepository;
-    private final ParticipantRepository participantRepository;
+    private final TournamentParticipantValidationService tournamentParticipantValidationService;
 
-    private boolean isTeamJoinedTournament(Tournament tournament, Team team) {
-        return tournamentParticipantRepository.existsByTournamentIdAndTeamIdAndStatus(tournament.getId(),
-            team.getId(), TournamentParticipantStatus.joined);
-    }
+    private final TournamentValidationService tournamentValidationService;
+
+    private final TeamValidationService teamValidationService;
+
+    private final ParticipantValidationService participantValidationService;
+
+    private final TournamentEnrollmentEmail tournamentEnrolledEmail;
 
     private boolean isTeamQueuedTournament(Tournament tournament, Team team) {
         return tournamentParticipantRepository.existsByTournamentIdAndTeamIdAndStatus(tournament.getId(),
@@ -155,8 +157,8 @@ public class TournamentParticipantService {
         TournamentParticipant tournamentParticipant = new TournamentParticipant();
         tournamentParticipant.setTournament(tournament);
         tournamentParticipant.setTeam(team);
-        validateTeamMemberCount(tournament, team);
-        if (validateTournamentCapacity(tournament)) {
+        participantValidationService.validateTeamMemberCount(tournament, team);
+        if (tournamentParticipantValidationService.validateTournamentCapacity(tournament)) {
             tournamentParticipant.setStatus(TournamentParticipantStatus.queued);
             return tournamentParticipantRepository.save(tournamentParticipant);
         } else {
@@ -175,11 +177,12 @@ public class TournamentParticipantService {
             return tournamentParticipantRepository.save(existingTournamentParticipant.get());
         }
 
-        throw new IllegalStateException("There isn't such team in the tournament.");
+        throw new ResourceNotFoundException(
+            "There isn't such team " + team.getName() + " in the tournament " + tournament.getTournamentName());
     }
 
     public TournamentParticipant rejoinTournament(Tournament tournament, Team team) {
-        if (validateTournamentCapacity(tournament)) {
+        if (tournamentParticipantValidationService.validateTournamentCapacity(tournament)) {
             return changeStatus(tournament, team, TournamentParticipantStatus.queued);
         } else {
             return changeStatus(tournament, team, TournamentParticipantStatus.joined);
@@ -196,11 +199,14 @@ public class TournamentParticipantService {
             while (i < queuedTeams.size() && !isTeamJoined) {
                 try {
                     Team teamInQueue = queuedTeams.get(i);
-                    // to do send email
-                    validateNoOverlappingUsersInTeamsInTournaments(teamInQueue, tournament);
+                    tournamentParticipantValidationService.validateNoOverlappingUsersInTeamsInTournaments(teamInQueue,
+                        tournament);
+                    tournamentParticipantValidationService.validateTeamMemberCount(tournament, teamInQueue);
+
                     changeStatus(tournament, teamInQueue, TournamentParticipantStatus.joined);
                     isTeamJoined = true;
-                } catch (IllegalStateException e) {
+                    tournamentEnrolledEmail.sendTournamentEnrollmentEmail(teamInQueue, tournament.getTournamentName());
+                } catch (OperationNotAllowedException e) {
                     i++;
                 }
             }
@@ -208,23 +214,32 @@ public class TournamentParticipantService {
         return changeStatus(tournament, team, TournamentParticipantStatus.left);
     }
 
+    public TournamentParticipant getTournamentParticipantById(Long id) {
+        return tournamentParticipantValidationService.validateTournamentParticipantExistById(id);
+    }
+
     public TournamentParticipant addTeamToTournament(TournamentParticipantRequest tournamentParticipantRequest) {
-        Tournament tournament = validateTournamentNameExist(tournamentParticipantRequest);
-        Team team = validateTeamNameExist(tournamentParticipantRequest);
+        Tournament tournament =
+            tournamentValidationService.validateTournamentNameExist(tournamentParticipantRequest.getTournamentName());
+        Team team = teamValidationService.validateTeamNameExist(tournamentParticipantRequest.getTeamName());
 
-        validateDateOfAdding(tournament);
-        validateSameCategory(tournament, team);
-        validateAllParticipantsInTeamWillBeInYouthCategory(tournament, team);
+        tournamentParticipantValidationService.validateDateOfAdding(tournament);
+        tournamentParticipantValidationService.validateSameCategory(tournament, team);
+        participantValidationService.validateAllParticipantsInTeamWillBeInYouthCategory(tournament, team);
+        tournamentParticipantValidationService.validateTeamMemberCount(tournament, team);
 
-        if (isTeamJoinedTournament(tournament, team)) {
-            throw new IllegalStateException("Team is already a participant of the tournament");
+        if (tournamentParticipantValidationService.isTeamJoinedTournament(tournament, team)) {
+            throw new OperationNotAllowedException(
+                "Team " + team.getName() + " is already a participant of the tournament " +
+                    tournament.getTournamentName());
         }
 
         if (isTeamQueuedTournament(tournament, team)) {
-            throw new IllegalStateException("Team is already queued in the tournament");
+            throw new OperationNotAllowedException(
+                "Team  " + team.getName() + " is already queued in the tournament " + tournament.getTournamentName());
         }
 
-        validateNoOverlappingUsersInTeamsInTournaments(team, tournament);
+        tournamentParticipantValidationService.validateNoOverlappingUsersInTeamsInTournaments(team, tournament);
 
         if (isTeamLeftTournament(tournament, team)) {
             return rejoinTournament(tournament, team);
@@ -234,17 +249,20 @@ public class TournamentParticipantService {
     }
 
     public TournamentParticipant deleteParticipantFromTeam(TournamentParticipantRequest tournamentParticipantRequest) {
-        Tournament tournament = validateTournamentNameExist(tournamentParticipantRequest);
-        Team team = validateTeamNameExist(tournamentParticipantRequest);
+        Tournament tournament =
+            tournamentValidationService.validateTournamentNameExist(tournamentParticipantRequest.getTournamentName());
+        Team team = teamValidationService.validateTeamNameExist(tournamentParticipantRequest.getTeamName());
 
-        validateDateOfRemoving(tournament);
+        tournamentParticipantValidationService.validateDateOfRemoving(tournament);
 
         if (!tournamentParticipantRepository.existsByTournamentAndTeam(tournament, team)) {
-            throw new IllegalStateException("Team doesn't participate in the tournament");
+            throw new ResourceNotFoundException(
+                "Team " + team.getName() + " doesn't participate in the tournament " + tournament.getTournamentName());
         }
 
         if (isTeamLeftTournament(tournament, team)) {
-            throw new IllegalStateException("Team has already left the tournament");
+            throw new OperationNotAllowedException(
+                "Team " + team.getName() + " has already left the tournament " + tournament.getTournamentName());
         }
 
         return removeTournamentParticipant(tournament, team);

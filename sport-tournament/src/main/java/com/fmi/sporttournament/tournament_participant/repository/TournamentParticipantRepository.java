@@ -31,6 +31,9 @@ public interface TournamentParticipantRepository extends JpaRepository<Tournamen
     @Query("SELECT tp.team FROM TournamentParticipant tp WHERE tp.status = :status AND tp.tournament = :tournament ORDER BY tp.timeStamp ASC")
     List<Team> findAllTeamsByTournamentStatusAndTournament(TournamentParticipantStatus status, Tournament tournament);
 
+    @Query("SELECT tp.team FROM TournamentParticipant tp WHERE (tp.status = 'joined' OR tp.status = 'queued')  AND tp.tournament = :tournament ORDER BY tp.timeStamp ASC")
+    List<Team> findAllEnrolledTeamsInTournament(Tournament tournament);
+
     @Query("SELECT DISTINCT tp.tournament FROM TournamentParticipant tp WHERE tp.team = :team AND tp.status = :status")
     List<Tournament> findTournamentsByTeamAndStatus(Team team, TournamentParticipantStatus status);
 

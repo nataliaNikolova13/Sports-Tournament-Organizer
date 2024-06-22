@@ -9,6 +9,7 @@ import com.fmi.sporttournament.match_result.service.MatchResultService;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,39 +28,27 @@ import java.util.Optional;
 public class MatchResultController {
     private final MatchResultService matchResultService;
     private final MatchResultMapper matchResultMapper;
+
     @GetMapping("/{id}")
     public ResponseEntity<MatchResultResponse> getMatchResultById(@PathVariable Long id) {
-        Optional<MatchResult> matchResult =  matchResultService.getMatchResultById(id);
-        return matchResult.map(
-                value -> new ResponseEntity<>(matchResultMapper.matchResultToResponse(value), HttpStatus.OK))
-            .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        MatchResult matchResult = matchResultService.getMatchResultById(id);
+        return ResponseEntity.ok(matchResultMapper.matchResultToResponse(matchResult));
     }
 
     @GetMapping("/tournament/name/{tournamentName}")
     public ResponseEntity<List<MatchResultResponse>> getMatchByTournamentName(@PathVariable String tournamentName) {
-        try {
-            List<MatchResult> matches = matchResultService.getMatchResultsForTournamentByTournamentName(tournamentName);
-            return ResponseEntity.ok(matchResultMapper.matchResultsToResponse(matches));
-        } catch (IllegalStateException | IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        List<MatchResult> matches = matchResultService.getMatchResultsForTournamentByTournamentName(tournamentName);
+        return ResponseEntity.ok(matchResultMapper.matchResultsToResponse(matches));
     }
 
     @GetMapping("/tournament/team")
-    public ResponseEntity<List<MatchResultResponse>> getMatchByTournamentAndTeam(@RequestBody
-                                                                           MatchResultTeamTournamentRequest matchResultTeamTournamentRequest) {
-        try {
-            String tournamentName = matchResultTeamTournamentRequest.getTournamentName();
-            String teamName = matchResultTeamTournamentRequest.getTeamName();
-            List<MatchResult> matches = matchResultService.getMatchResultsForTournamentByTournamentAndTeam(tournamentName, teamName);
-            return ResponseEntity.ok(matchResultMapper.matchResultsToResponse(matches));
-        } catch (IllegalStateException | IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<List<MatchResultResponse>> getMatchByTournamentAndTeam(@RequestBody @Valid
+                                                                                 MatchResultTeamTournamentRequest matchResultTeamTournamentRequest) {
+        String tournamentName = matchResultTeamTournamentRequest.getTournamentName();
+        String teamName = matchResultTeamTournamentRequest.getTeamName();
+        List<MatchResult> matches =
+            matchResultService.getMatchResultsForTournamentByTournamentAndTeam(tournamentName, teamName);
+        return ResponseEntity.ok(matchResultMapper.matchResultsToResponse(matches));
     }
 
     @GetMapping("/results")

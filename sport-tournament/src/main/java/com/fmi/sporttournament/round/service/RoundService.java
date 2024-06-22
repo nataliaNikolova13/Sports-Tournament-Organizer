@@ -8,16 +8,16 @@ import com.fmi.sporttournament.round.dto.request.RoundRequest;
 import com.fmi.sporttournament.round.dto.response.MatchDetailsDto;
 import com.fmi.sporttournament.round.entity.Round;
 import com.fmi.sporttournament.round.mapper.RoundMapper;
-import com.fmi.sporttournament.tournament.entity.Tournament;
 import com.fmi.sporttournament.round.repository.RoundRepository;
+
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
 
 @Service
 @Data
@@ -27,9 +27,10 @@ public class RoundService {
     private final RoundMapper roundMapper;
     private final MatchRepository matchRepository;
     private final MatchResultRepository matchResultRepository;
+    private final RoundValidationService roundValidationService;
 
-    public Optional<Round> getRoundById(Long id){
-        return roundRepository.findById(id);
+    public Round getRoundById(Long id) {
+        return roundValidationService.validateRoundExistById(id);
     }
 
     public List<Round> getRoundByTournamentId(Long id){
@@ -37,6 +38,7 @@ public class RoundService {
     }
 
     public Round createRound(RoundRequest roundRequest){
+    public Round createRound(RoundRequest roundRequest) {
         Round round = roundMapper.requestToRound(roundRequest);
         return roundRepository.save(round);
     }

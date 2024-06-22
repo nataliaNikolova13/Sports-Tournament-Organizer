@@ -1,8 +1,9 @@
 package com.fmi.sporttournament.tournament.service;
 
 import com.fmi.sporttournament.email.dto.request.EmailRequestAllUsers;
-import com.fmi.sporttournament.email.service.EmailService;
-import com.fmi.sporttournament.export.match.MatchInformation;
+import com.fmi.sporttournament.email.emails.match.MatchInformation;
+import com.fmi.sporttournament.email.emails.tournament.TournamentCancellationEmail;
+
 import com.fmi.sporttournament.match.entity.Match;
 import com.fmi.sporttournament.match.service.MatchService;
 
@@ -14,6 +15,10 @@ import com.fmi.sporttournament.team.entity.Team;
 
 import com.fmi.sporttournament.tournament.dto.request.TournamentCreationRequest;
 import com.fmi.sporttournament.tournament.dto.request.TournamentRegistrationRequest;
+import com.fmi.sporttournament.tournament.entity.Tournament;
+import com.fmi.sporttournament.tournament.entity.category.TournamentCategory;
+import com.fmi.sporttournament.tournament.mapper.TournamentMapper;
+import com.fmi.sporttournament.tournament.repository.TournamentRepository;
 
 import com.fmi.sporttournament.location.entity.Location;
 
@@ -25,10 +30,13 @@ import com.fmi.sporttournament.tournament.mapper.TournamentMapper;
 import com.fmi.sporttournament.location.repository.LocationRepository;
 
 import com.fmi.sporttournament.tournament.repository.TournamentRepository;
+import com.fmi.sporttournament.location.service.LocationValidationService;
 
 import com.fmi.sporttournament.tournament_participant.entity.status.TournamentParticipantStatus;
 import com.fmi.sporttournament.tournament_participant.repository.TournamentParticipantRepository;
-import com.fmi.sporttournament.user.entity.User;
+
+import com.fmi.sporttournament.tournament_participant.service.TournamentParticipantValidationService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.util.Pair;
@@ -37,7 +45,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -50,180 +57,36 @@ import java.util.stream.Collectors;
 public class TournamentService {
     private final TournamentRepository tournamentRepository;
     private final TournamentMapper tournamentMapper;
-    private final LocationRepository locationRepository;
+    private final TournamentValidationService tournamentValidationService;
+
     private final TournamentParticipantRepository tournamentParticipantRepository;
+
     private final MatchService matchService;
+
     private final RoundService roundService;
+
     private final MatchInformation matchInformation;
-    private final EmailService emailService;
 
-    private void validateTournamentNameNotExist(String tournamentName) {
-        if (getTournamentByTournamentName(tournamentName).isPresent()) {
-            throw new IllegalArgumentException("Tournament with this name " + tournamentName + " already exists");
-        }
-    }
+    private final TournamentParticipantValidationService tournamentParticipantValidationService;
 
-    private Tournament validateTournamentIdExist(Long id) {
-        Optional<Tournament> tournament = getTournamentById(id);
-        if (tournament.isEmpty()) {
-            throw new IllegalArgumentException("Tournament with this id " + id + " doesn't exist");
-        }
-        return tournament.get();
-    }
+    private final LocationValidationService locationValidationService;
 
-    private Tournament validateTournamentNameExist(String tournamentName) {
-        Optional<Tournament> tournament = getTournamentByTournamentName(tournamentName);
-        if (tournament.isEmpty()) {
-            throw new IllegalArgumentException("Tournament with this name " + tournamentName + " doesn't exist");
-        }
-        return tournament.get();
-    }
-
-    private Location validateLocationNameExist(String locationName) {
-        Optional<Location> location = locationRepository.findByLocationName(locationName);
-        if (location.isEmpty()) {
-            throw new IllegalArgumentException("Location with name " + locationName + " doesn't exist");
-        }
-        return location.get();
-    }
-
-    private void validateTournamentNameIsNotBlank(String tournamentName) {
-        if (tournamentName.isBlank()) {
-            throw new IllegalArgumentException("Tournament name can't be blank");
-        }
-    }
-
-    private void validateRequestDates(Date startAt, Date endAt) {
-        if (endAt.toInstant().isBefore(startAt.toInstant())) {
-            throw new IllegalStateException("The end date can not be before the start date of the tournament");
-        }
-
-        if (startAt.toInstant().isBefore(Instant.now())) {
-            throw new IllegalStateException("The start date can not be before today date");
-        }
-    }
-
-    private void validateDateOfUpdate(Date startAt) {
-        if (startAt.toInstant().isBefore(Instant.now())) {
-            throw new IllegalStateException("The tournament can't be changed during the competition");
-        }
-    }
-
-    private boolean isLocationAvailable(Long locationId, Date startAt, Date endAt) {
-        List<Tournament> conflictingTournaments =
-            tournamentRepository.findConflictingTournaments(locationId, startAt, endAt);
-        return conflictingTournaments.isEmpty();
-    }
-
-    private Location validateLocationExist(String locationName) {
-        Optional<Location> location = locationRepository.findByLocationName(locationName);
-        if (location.isEmpty()) {
-            throw new IllegalArgumentException("The location " + locationName + " doesn't exist");
-        }
-        return location.get();
-    }
-
-    private void validateLocationAvailabilityDates(Location location, Date startAt, Date endAt) {
-        if (!isLocationAvailable(location.getId(), startAt, endAt)) {
-            throw new IllegalArgumentException(
-                "Location with name " + location.getLocationName() + " is not available for the requested dates.");
-        }
-    }
-
-    private void validateLocationAvailabilityDates(Tournament tournament, Location location, Date startAt, Date endAt) {
-        List<Tournament> conflictingTournaments =
-            tournamentRepository.findConflictingTournaments(location.getId(), startAt, endAt);
-        if (!conflictingTournaments.isEmpty() &&
-            (conflictingTournaments.size() != 1 || !conflictingTournaments.contains(tournament))) {
-            throw new IllegalArgumentException(
-                "Location with name " + location.getLocationName() + " is not available for the requested dates.");
-        }
-    }
-
-    private void validateTeamCount(Integer teamCount) {
-        if (teamCount < 2 || (teamCount & (teamCount - 1)) != 0) {
-            throw new IllegalArgumentException("The team count should be power of 2.");
-        }
-    }
-
-    private void validateHours(Integer startHour, Integer endHour) {
-        if (startHour < 0 || startHour > 23) {
-            throw new IllegalArgumentException("The start hour is invalid");
-        }
-
-        if (endHour < 0 || endHour > 23) {
-            throw new IllegalArgumentException("The end date is invalid");
-        }
-
-        if (startHour >= endHour) {
-            throw new IllegalArgumentException("The start hour can't be after the end hour");
-        }
-    }
-
-    private void validateMatchDuration(Integer startHour, Integer endHour, Integer matchDuration) {
-        if (matchDuration < 0 || matchDuration > (endHour - startHour)) {
-            throw new IllegalArgumentException(
-                "The match duration can't be more than the duration of the whole tournament day");
-        }
-    }
-
-    private Integer matchesInVenuePerDay(Integer startHour, Integer endHour, Integer matchDuration) {
-        Integer durationTournamentDay = endHour - startHour;
-        return durationTournamentDay / matchDuration;
-    }
-
-    private Integer howManyDaysForOneRound(Integer matchesCountInRound, Long matchesPerDay) {
-        return (int) Math.ceil((double) matchesCountInRound / matchesPerDay);
-    }
-
-    private void validateVenuesAvailability(String locationName, Date startAt, Date endAt, Integer startHour,
-                                            Integer endHour, Integer teamCount, Integer matchDuration) {
-        Long availableDays = ChronoUnit.DAYS.between(startAt.toInstant(), endAt.toInstant());
-        Long venueCount = locationRepository.countVenuesByLocationName(locationName);
-        Integer matchesInVenuePerDay = matchesInVenuePerDay(startHour, endHour, matchDuration);
-        Long matchesPerDay = matchesInVenuePerDay * venueCount;
-        int necessaryDays = 0;
-        while (teamCount > 0) {
-            Integer matchesCountInRound = teamCount / 2;
-            necessaryDays += howManyDaysForOneRound(matchesCountInRound, matchesPerDay);
-            teamCount /= 2;
-        }
-        if (necessaryDays > availableDays) {
-            throw new IllegalArgumentException("There aren't enough venues for this count of teams " + teamCount +
-                " and for this match duration in hours " + matchDuration + ".");
-        }
-    }
-
-    private void validateTeamMemberCount(Integer teamMemberCount) {
-        if (teamMemberCount <= 0) {
-            throw new IllegalArgumentException("The number of members of the teams can't be zero or less");
-        }
-    }
-
-    private void validateTeamMemberCountIsNotChanged(Tournament tournament, Integer teamMemberCount) {
-        if (teamMemberCount != tournament.getTeamMemberCount()) {
-            throw new IllegalArgumentException("The number of members of the teams can't be changed");
-        }
-    }
-
-    private void validateTournamentCapacityBeforeStart(Tournament tournament) {
-        if (tournament.getTeamCount() != tournamentParticipantRepository.findAllTeamsByTournamentStatusAndTournament(
-            TournamentParticipantStatus.joined, tournament).size()) {
-            throw new IllegalStateException(
-                "The tournament can't start since the count of the joined teams isn't supported");
-        }
-    }
+    private final TournamentCancellationEmail tournamentCancellationEmail;
 
     public List<Tournament> getAllTournaments() {
         return tournamentRepository.findAll();
     }
 
-    public Optional<Tournament> getTournamentById(Long id) {
-        return tournamentRepository.findById(id);
+    public List<Tournament> getAllValidTournaments() {
+        return tournamentRepository.findValidTournaments();
     }
 
-    public Optional<Tournament> getTournamentByTournamentName(String tournamentName) {
-        return tournamentRepository.findByTournamentName(tournamentName);
+    public Tournament getTournamentById(Long id) {
+        return tournamentValidationService.validateTournamentIdExist(id);
+    }
+
+    public Tournament getTournamentByTournamentName(String tournamentName) {
+        return tournamentValidationService.validateTournamentNameExist(tournamentName);
     }
 
     public List<Tournament> getTournamentBySportType(String sportType) {
@@ -231,41 +94,39 @@ public class TournamentService {
     }
 
     public List<Tournament> getTournamentByLocationName(String locationName) {
-        Location location = validateLocationExist(locationName);
+        Location location = locationValidationService.validateLocationNameExist(locationName);
         return tournamentRepository.findValidTournamentsByLocation(location);
     }
 
     public Tournament createTournament(TournamentRegistrationRequest tournamentRegistrationRequest) {
         String tournamentName = tournamentRegistrationRequest.getTournamentName();
 
-        validateTournamentNameNotExist(tournamentName);
-        validateTournamentNameIsNotBlank(tournamentName);
+        tournamentValidationService.validateTournamentNameNotExist(tournamentName);
 
         String locationName = tournamentRegistrationRequest.getLocationName();
-        Location location = validateLocationNameExist(locationName);
+        Location location = locationValidationService.validateLocationNameExist(locationName);
 
         String sportType = tournamentRegistrationRequest.getSportType();
 
         Date startAt = tournamentRegistrationRequest.getStartAt();
         Date endAt = tournamentRegistrationRequest.getEndAt();
-        validateRequestDates(startAt, endAt);
-        validateLocationAvailabilityDates(location, startAt, endAt);
+        tournamentValidationService.validateRequestDates(startAt, endAt);
+        tournamentValidationService.validateLocationAvailabilityDates(location, startAt, endAt);
 
         Integer startHour = tournamentRegistrationRequest.getStartHour();
         Integer endHour = tournamentRegistrationRequest.getEndHour();
-        validateHours(startHour, endHour);
+        tournamentValidationService.validateHours(startHour, endHour);
 
         Integer teamCount = tournamentRegistrationRequest.getTeamCount();
-        validateTeamCount(teamCount);
+        tournamentValidationService.validateTeamCount(teamCount);
 
         Integer matchDuration = tournamentRegistrationRequest.getMatchDuration();
-        validateMatchDuration(startHour, endHour, matchDuration);
+        tournamentValidationService.validateMatchDuration(startHour, endHour, matchDuration);
 
-        validateVenuesAvailability(locationName, startAt, endAt, startHour,
+        locationValidationService.validateVenuesAvailability(locationName, startAt, endAt, startHour,
             endHour, teamCount, matchDuration);
 
         Integer teamMemberCount = tournamentRegistrationRequest.getTeamMemberCount();
-        validateTeamMemberCount(teamMemberCount);
 
         TournamentCreationRequest tournamentCreationRequest =
             new TournamentCreationRequest(tournamentName, sportType,
@@ -277,24 +138,37 @@ public class TournamentService {
         return tournamentRepository.save(tournament);
     }
 
+    private void sendTournamentCancellationEmailToParticipants(Tournament tournament){
+        List<Team> teams = tournamentParticipantRepository.findAllEnrolledTeamsInTournament(tournament);
+        for (Team team : teams) {
+            tournamentCancellationEmail.sendTournamentCancellationEmail(team, tournament.getTournamentName());
+        }
+    }
+
+    @Transactional
     public void deleteTournamentById(Long id) {
-        Tournament tournament = validateTournamentIdExist(id);
-        validateDateOfUpdate(tournament.getStartAt());
+        Tournament tournament = tournamentValidationService.validateTournamentIdExist(id);
+        tournamentValidationService.validateDateOfUpdate(tournament.getStartAt());
+        sendTournamentCancellationEmailToParticipants(tournament);
         tournamentRepository.deleteById(id);
     }
 
+    @Transactional
     public void deleteTournamentByTournamentName(String tournamentName) {
-        Tournament tournament = validateTournamentNameExist(tournamentName);
-        validateDateOfUpdate(tournament.getStartAt());
+        Tournament tournament = tournamentValidationService.validateTournamentNameExist(tournamentName);
+        tournamentValidationService.validateDateOfUpdate(tournament.getStartAt());
+        sendTournamentCancellationEmailToParticipants(tournament);
         tournamentRepository.deleteById(tournament.getId());
     }
 
-    private void setTournament(Tournament tournament, String tournamentName, String sportType, Location location,
+    private void setTournament(Tournament tournament, String tournamentName,
+                               String sportType, TournamentCategory tournamentCategory, Location location,
                                Date startAt, Date endAt,
                                Integer startHour, Integer endHour, Integer teamCount, Integer matchDuration,
                                Integer teamMemberCount) {
         tournament.setTournamentName(tournamentName);
         tournament.setSportType(sportType);
+        tournament.setTournamentCategory(tournamentCategory);
         tournament.setLocation(location);
         tournament.setStartAt(startAt);
         tournament.setEndAt(endAt);
@@ -306,55 +180,55 @@ public class TournamentService {
     }
 
     public Tournament updateTournament(Long id, TournamentRegistrationRequest tournamentRegistrationRequest) {
-        Tournament tournament = validateTournamentIdExist(id);
+        Tournament tournament = tournamentValidationService.validateTournamentIdExist(id);
+        tournamentParticipantValidationService.validateNoTeamJoinedInTournament(tournament);
 
         String tournamentName = tournamentRegistrationRequest.getTournamentName();
 
-        validateTournamentNameIsNotBlank(tournamentName);
-
         if (!tournament.getTournamentName().equals(tournamentName)) {
-            validateTournamentNameNotExist(tournamentName);
+            tournamentValidationService.validateTournamentNameNotExist(tournamentName);
         }
 
         String locationName = tournamentRegistrationRequest.getLocationName();
-        Location location = validateLocationNameExist(locationName);
+        Location location = locationValidationService.validateLocationNameExist(locationName);
 
         String sportType = tournamentRegistrationRequest.getSportType();
+
         Date startAt = tournamentRegistrationRequest.getStartAt();
         Date endAt = tournamentRegistrationRequest.getEndAt();
-        validateRequestDates(startAt, endAt);
-        validateDateOfUpdate(startAt);
+        tournamentValidationService.validateRequestDates(startAt, endAt);
+        tournamentValidationService.validateDateOfUpdate(startAt);
 
-        validateLocationAvailabilityDates(tournament, location, startAt, endAt);
+        tournamentValidationService.validateLocationAvailabilityDates(tournament, location, startAt, endAt);
 
         Integer startHour = tournamentRegistrationRequest.getStartHour();
         Integer endHour = tournamentRegistrationRequest.getEndHour();
-        validateHours(startHour, endHour);
+        tournamentValidationService.validateHours(startHour, endHour);
 
         Integer teamCount = tournamentRegistrationRequest.getTeamCount();
-        validateTeamCount(teamCount);
+        tournamentValidationService.validateTeamCount(teamCount);
 
         Integer matchDuration = tournamentRegistrationRequest.getMatchDuration();
-        validateMatchDuration(startHour, endHour, matchDuration);
+        tournamentValidationService.validateMatchDuration(startHour, endHour, matchDuration);
 
-        validateVenuesAvailability(locationName, startAt, endAt, startHour,
+        locationValidationService.validateVenuesAvailability(locationName, startAt, endAt, startHour,
             endHour, teamCount, matchDuration);
 
         Integer teamMemberCount = tournamentRegistrationRequest.getTeamMemberCount();
-        validateTeamMemberCountIsNotChanged(tournament, teamMemberCount);
-
-        setTournament(tournament, tournamentName, sportType, location, startAt, endAt, startHour, endHour, teamCount,
+        TournamentCategory tournamentCategory = tournamentRegistrationRequest.getTournamentCategory();
+        setTournament(tournament, tournamentName, sportType, tournamentCategory, location, startAt, endAt, startHour,
+            endHour, teamCount,
             matchDuration, teamMemberCount);
 
         return tournamentRepository.save(tournament);
     }
 
     private Tournament updateTournamentName(Tournament tournament, String newTournamentName) {
-        validateTournamentNameIsNotBlank(newTournamentName);
-        validateDateOfUpdate(tournament.getStartAt());
+        tournamentParticipantValidationService.validateNoTeamJoinedInTournament(tournament);
+        tournamentValidationService.validateDateOfUpdate(tournament.getStartAt());
 
         if (!tournament.getTournamentName().equals(newTournamentName)) {
-            validateTournamentNameNotExist(newTournamentName);
+            tournamentValidationService.validateTournamentNameNotExist(newTournamentName);
         }
 
         tournament.setTournamentName(newTournamentName);
@@ -362,32 +236,33 @@ public class TournamentService {
     }
 
     public Tournament updateTournamentNameById(Long id, String newTournamentName) {
-        Tournament tournament = validateTournamentIdExist(id);
+        Tournament tournament = tournamentValidationService.validateTournamentIdExist(id);
         return updateTournamentName(tournament, newTournamentName);
     }
 
     public Tournament updateTournamentNameByTournamentName(String currentTournamentName, String newTournamentName) {
-        Tournament tournament = validateTournamentNameExist(currentTournamentName);
+        Tournament tournament = tournamentValidationService.validateTournamentNameExist(currentTournamentName);
         return updateTournamentName(tournament, newTournamentName);
     }
 
     private Tournament updateTournamentLocation(Tournament tournament, String newLocationName) {
-        Location location = validateLocationNameExist(newLocationName);
+        tournamentParticipantValidationService.validateNoTeamJoinedInTournament(tournament);
+        Location location = locationValidationService.validateLocationNameExist(newLocationName);
 
         Date startAt = tournament.getStartAt();
         Date endAt = tournament.getEndAt();
 
-        validateRequestDates(tournament.getStartAt(), tournament.getEndAt());
+        tournamentValidationService.validateRequestDates(tournament.getStartAt(), tournament.getEndAt());
 
-        validateLocationAvailabilityDates(tournament, location, startAt, endAt);
-        validateDateOfUpdate(startAt);
+        tournamentValidationService.validateLocationAvailabilityDates(tournament, location, startAt, endAt);
+        tournamentValidationService.validateDateOfUpdate(startAt);
 
         Integer startHour = tournament.getStartHour();
         Integer endHour = tournament.getEndHour();
         Integer teamCount = tournament.getTeamCount();
         Integer matchDuration = tournament.getMatchDuration();
 
-        validateVenuesAvailability(location.getLocationName(), startAt, endAt, startHour,
+        locationValidationService.validateVenuesAvailability(location.getLocationName(), startAt, endAt, startHour,
             endHour, teamCount, matchDuration);
 
         tournament.setLocation(location);
@@ -395,44 +270,64 @@ public class TournamentService {
     }
 
     public Tournament updateTournamentLocationById(Long id, String newLocationName) {
-        Tournament tournament = validateTournamentIdExist(id);
+        Tournament tournament = tournamentValidationService.validateTournamentIdExist(id);
         return updateTournamentLocation(tournament, newLocationName);
     }
 
     public Tournament updateTournamentLocationByTournamentName(String tournamentName, String newLocationName) {
-        Tournament tournament = validateTournamentNameExist(tournamentName);
+        Tournament tournament = tournamentValidationService.validateTournamentNameExist(tournamentName);
         return updateTournamentLocation(tournament, newLocationName);
     }
 
     private Tournament updateTournamentSportType(Tournament tournament, String newSportType) {
-        validateDateOfUpdate(tournament.getStartAt());
+        tournamentParticipantValidationService.validateNoTeamJoinedInTournament(tournament);
+        tournamentValidationService.validateDateOfUpdate(tournament.getStartAt());
         tournament.setSportType(newSportType);
         return tournamentRepository.save(tournament);
     }
 
     public Tournament updateTournamentSportTypeById(Long id, String newSportType) {
-        Tournament tournament = validateTournamentIdExist(id);
+        Tournament tournament = tournamentValidationService.validateTournamentIdExist(id);
         return updateTournamentSportType(tournament, newSportType);
     }
 
     public Tournament updateTournamentSportTypeByTournamentName(String tournamentName, String newSportType) {
-        Tournament tournament = validateTournamentNameExist(tournamentName);
+        Tournament tournament = tournamentValidationService.validateTournamentNameExist(tournamentName);
         return updateTournamentSportType(tournament, newSportType);
     }
 
+    private Tournament updateTournamentCategory(Tournament tournament, TournamentCategory tournamentCategory) {
+        tournamentParticipantValidationService.validateNoTeamJoinedInTournament(tournament);
+        tournament.setTournamentCategory(tournamentCategory);
+        return tournamentRepository.save(tournament);
+    }
+
+    public Tournament updateTournamentCategoryById(Long id, TournamentCategory tournamentCategory) {
+        Tournament tournament = tournamentValidationService.validateTournamentIdExist(id);
+        return updateTournamentCategory(tournament, tournamentCategory);
+    }
+
+    public Tournament updateTournamentCategoryByTournamentName(String tournamentName,
+                                                               TournamentCategory tournamentCategory) {
+        Tournament tournament = tournamentValidationService.validateTournamentNameExist(tournamentName);
+        return updateTournamentCategory(tournament, tournamentCategory);
+    }
+
     private Tournament updateTournamentDates(Tournament tournament, Date newStartAt, Date newEndAt) {
-        validateDateOfUpdate(tournament.getStartAt());
-        validateRequestDates(newStartAt, newEndAt);
+        tournamentParticipantValidationService.validateNoTeamJoinedInTournament(tournament);
+        tournamentValidationService.validateDateOfUpdate(tournament.getStartAt());
+        tournamentValidationService.validateRequestDates(newStartAt, newEndAt);
 
         Location location = tournament.getLocation();
-        validateLocationAvailabilityDates(tournament, location, newStartAt, newEndAt);
+        tournamentValidationService.validateLocationAvailabilityDates(tournament, location, newStartAt, newEndAt);
 
         Integer startHour = tournament.getStartHour();
         Integer endHour = tournament.getEndHour();
         Integer teamCount = tournament.getTeamCount();
         Integer matchDuration = tournament.getMatchDuration();
 
-        validateVenuesAvailability(location.getLocationName(), newStartAt, newEndAt, startHour,
+        locationValidationService.validateVenuesAvailability(location.getLocationName(), newStartAt, newEndAt,
+            startHour,
             endHour, teamCount, matchDuration);
 
         tournament.setStartAt(newStartAt);
@@ -441,28 +336,29 @@ public class TournamentService {
     }
 
     public Tournament updateTournamentDatesById(Long id, Date newStartAt, Date newEndAt) {
-        Tournament tournament = validateTournamentIdExist(id);
+        Tournament tournament = tournamentValidationService.validateTournamentIdExist(id);
         return updateTournamentDates(tournament, newStartAt, newEndAt);
     }
 
     public Tournament updateTournamentDatesByTournamentName(String tournamentName, Date newStartAt, Date newEndAt) {
-        Tournament tournament = validateTournamentNameExist(tournamentName);
+        Tournament tournament = tournamentValidationService.validateTournamentNameExist(tournamentName);
         return updateTournamentDates(tournament, newStartAt, newEndAt);
     }
 
     private Tournament updateTournamentMatchDuration(Tournament tournament, Integer newMatchDuration) {
+        tournamentParticipantValidationService.validateNoTeamJoinedInTournament(tournament);
         String locationName = tournament.getLocation().getLocationName();
 
         Date startAt = tournament.getStartAt();
         Date endAt = tournament.getEndAt();
-        validateDateOfUpdate(startAt);
+        tournamentValidationService.validateDateOfUpdate(startAt);
 
         Integer startHour = tournament.getStartHour();
         Integer endHour = tournament.getEndHour();
         Integer teamCount = tournament.getTeamCount();
-        validateMatchDuration(startHour, endHour, newMatchDuration);
+        tournamentValidationService.validateMatchDuration(startHour, endHour, newMatchDuration);
 
-        validateVenuesAvailability(locationName, startAt, endAt, startHour,
+        locationValidationService.validateVenuesAvailability(locationName, startAt, endAt, startHour,
             endHour, teamCount, newMatchDuration);
 
         tournament.setMatchDuration(newMatchDuration);
@@ -470,30 +366,31 @@ public class TournamentService {
     }
 
     public Tournament updateTournamentMatchDurationById(Long id, Integer newMatchDuration) {
-        Tournament tournament = validateTournamentIdExist(id);
+        Tournament tournament = tournamentValidationService.validateTournamentIdExist(id);
         return updateTournamentMatchDuration(tournament, newMatchDuration);
     }
 
     public Tournament updateTournamentMatchDurationByTournamentName(String tournamentName, Integer newMatchDuration) {
-        Tournament tournament = validateTournamentNameExist(tournamentName);
+        Tournament tournament = tournamentValidationService.validateTournamentNameExist(tournamentName);
         return updateTournamentMatchDuration(tournament, newMatchDuration);
     }
 
     private Tournament updateTournamentHours(Tournament tournament, Integer newStartHour, Integer newEndHour) {
+        tournamentParticipantValidationService.validateNoTeamJoinedInTournament(tournament);
         String locationName = tournament.getLocation().getLocationName();
 
         Date startAt = tournament.getStartAt();
         Date endAt = tournament.getEndAt();
-        validateDateOfUpdate(startAt);
+        tournamentValidationService.validateDateOfUpdate(startAt);
 
-        validateHours(newStartHour, newEndHour);
+        tournamentValidationService.validateHours(newStartHour, newEndHour);
 
         Integer teamCount = tournament.getTeamCount();
 
         Integer matchDuration = tournament.getMatchDuration();
-        validateMatchDuration(newStartHour, newEndHour, matchDuration);
+        tournamentValidationService.validateMatchDuration(newStartHour, newEndHour, matchDuration);
 
-        validateVenuesAvailability(locationName, startAt, endAt, newStartHour,
+        locationValidationService.validateVenuesAvailability(locationName, startAt, endAt, newStartHour,
             newEndHour, teamCount, matchDuration);
 
         tournament.setStartHour(newStartHour);
@@ -502,30 +399,31 @@ public class TournamentService {
     }
 
     public Tournament updateTournamentHoursById(Long id, Integer newStartHour, Integer newEndHour) {
-        Tournament tournament = validateTournamentIdExist(id);
+        Tournament tournament = tournamentValidationService.validateTournamentIdExist(id);
         return updateTournamentHours(tournament, newStartHour, newEndHour);
     }
 
     public Tournament updateTournamentHoursByTournamentName(String tournamentName, Integer newStartHour,
                                                             Integer newEndHour) {
-        Tournament tournament = validateTournamentNameExist(tournamentName);
+        Tournament tournament = tournamentValidationService.validateTournamentNameExist(tournamentName);
         return updateTournamentHours(tournament, newStartHour, newEndHour);
     }
 
     private Tournament updateTournamentTeamCount(Tournament tournament, Integer newTeamCount) {
+        tournamentParticipantValidationService.validateNoTeamJoinedInTournament(tournament);
         String locationName = tournament.getLocation().getLocationName();
 
         Date startAt = tournament.getStartAt();
         Date endAt = tournament.getEndAt();
-        validateDateOfUpdate(startAt);
+        tournamentValidationService.validateDateOfUpdate(startAt);
 
         Integer startHour = tournament.getStartHour();
         Integer endHour = tournament.getEndHour();
         Integer matchDuration = tournament.getMatchDuration();
 
-        validateTeamCount(newTeamCount);
+        tournamentValidationService.validateTeamCount(newTeamCount);
 
-        validateVenuesAvailability(locationName, startAt, endAt, startHour,
+        locationValidationService.validateVenuesAvailability(locationName, startAt, endAt, startHour,
             endHour, newTeamCount, matchDuration);
 
         tournament.setTeamCount(newTeamCount);
@@ -533,13 +431,29 @@ public class TournamentService {
     }
 
     public Tournament updateTournamentTeamCountById(Long id, Integer newTeamCount) {
-        Tournament tournament = validateTournamentIdExist(id);
+        Tournament tournament = tournamentValidationService.validateTournamentIdExist(id);
         return updateTournamentTeamCount(tournament, newTeamCount);
     }
 
     public Tournament updateTournamentTeamCountByTournamentName(String tournamentName, Integer newTeamCount) {
-        Tournament tournament = validateTournamentNameExist(tournamentName);
+        Tournament tournament = tournamentValidationService.validateTournamentNameExist(tournamentName);
         return updateTournamentTeamCount(tournament, newTeamCount);
+    }
+
+    private Tournament updateTournamentTeamMemberCount(Tournament tournament, Integer newTeamMemberCount) {
+        tournamentParticipantValidationService.validateNoTeamJoinedInTournament(tournament);
+        tournament.setTeamCount(newTeamMemberCount);
+        return tournamentRepository.save(tournament);
+    }
+
+    public Tournament updateTournamentTeamMemberCountById(Long id, Integer newTeamCount) {
+        Tournament tournament = tournamentValidationService.validateTournamentIdExist(id);
+        return updateTournamentTeamMemberCount(tournament, newTeamCount);
+    }
+
+    public Tournament updateTournamentTeamMemberCountByTournamentName(String tournamentName, Integer newTeamCount) {
+        Tournament tournament = tournamentValidationService.validateTournamentNameExist(tournamentName);
+        return updateTournamentTeamMemberCount(tournament, newTeamCount);
     }
 
     private void scheduleTournamentMatches(Tournament tournament) {
@@ -559,9 +473,10 @@ public class TournamentService {
         }
     }
 
+    @Transactional
     public Tournament startTournamentById(Long id) throws IOException {
-        Tournament tournament = validateTournamentIdExist(id);
-        validateTournamentCapacityBeforeStart(tournament);
+        Tournament tournament = tournamentValidationService.validateTournamentIdExist(id);
+        tournamentParticipantValidationService.validateTournamentCapacityBeforeStart(tournament);
         scheduleTournamentMatches(tournament);
         List<Team> teams = tournamentParticipantRepository.findAllTeamsByTournamentStatusAndTournament(
             TournamentParticipantStatus.joined, tournament);

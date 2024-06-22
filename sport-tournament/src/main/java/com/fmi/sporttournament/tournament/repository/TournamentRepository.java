@@ -38,6 +38,8 @@ public interface TournamentRepository extends JpaRepository<Tournament, Long> {
     @Query("SELECT t FROM Tournament t WHERE t.sportType= :sportType AND t.endAt > CURRENT_TIMESTAMP")
     List<Tournament> findValidTournamentsBySportType(String sportType);
 
+    @Query("SELECT t FROM Tournament t WHERE t.endAt > CURRENT_TIMESTAMP")
+    List<Tournament> findValidTournaments();
 
     List<Tournament> findByStartAt(Date startAt);
 }

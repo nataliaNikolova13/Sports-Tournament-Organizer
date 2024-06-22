@@ -6,8 +6,13 @@ import com.fmi.sporttournament.user.entity.User;
 import com.fmi.sporttournament.user.entity.role.Role;
 import com.fmi.sporttournament.user.mapper.UserMapper;
 import com.fmi.sporttournament.user.service.UserService;
+
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
+import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,16 +36,14 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
-        Optional<User> user = userService.getUserById(id);
-        return user.map(value -> new ResponseEntity<>(userMapper.userToDto(value), HttpStatus.OK))
-            .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        User user = userService.getUserById(id);
+        return ResponseEntity.ok(userMapper.userToDto(user));
     }
 
     @GetMapping("/email/{email}")
     public ResponseEntity<UserDto> getUserByEmail(@PathVariable String email) {
-        Optional<User> user = userService.getUserByEmail(email);
-        return user.map(value -> new ResponseEntity<>(userMapper.userToDto(value), HttpStatus.OK))
-            .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        User user = userService.getUserByEmail(email);
+        return ResponseEntity.ok(userMapper.userToDto(user));
     }
 
     @GetMapping("/role/{role}")
@@ -51,19 +54,13 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-        try {
             userService.removeUser(id);
             return ResponseEntity.ok().build();
-        } catch (IllegalStateException e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
     }
 
     @PutMapping("/role/{userId}")
-    public ResponseEntity<UserDto> updateUserRole(@PathVariable Long userId, @RequestBody ChangeRoleRequest changeRoleRequest) {
-        System.out.println("here");
+    public ResponseEntity<UserDto> updateUserRole(@PathVariable Long userId,
+                                                  @RequestBody @Valid ChangeRoleRequest changeRoleRequest) {
         Optional<User> userOptional = userService.updateUserRole(userId, changeRoleRequest);
         if (userOptional.isPresent()) {
             User user = userOptional.get();

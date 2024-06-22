@@ -1,23 +1,28 @@
-package com.fmi.sporttournament.export.match;
+package com.fmi.sporttournament.email.emails.match;
 
 import com.fmi.sporttournament.email.dto.request.EmailRequestAllUsers;
 import com.fmi.sporttournament.email.service.EmailService;
+
 import com.fmi.sporttournament.match.entity.Match;
 import com.fmi.sporttournament.match.repository.MatchRepository;
+
 import com.fmi.sporttournament.match_result.entity.MatchResult;
 import com.fmi.sporttournament.match_result.repository.MatchResultRepository;
+
 import com.fmi.sporttournament.team.entity.Team;
+
 import com.fmi.sporttournament.tournament.entity.Tournament;
+
 import com.opencsv.CSVWriter;
-import jakarta.mail.MessagingException;
+
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,7 +48,7 @@ public class MatchInformation {
         try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
             String[] header =
                 {"Match ID", "Tournament", "Round Number", "Team 1", "Team 2", "Team 1 Score", "Team 2 Score", "Winner",
-                    "Match Date","Venue"};
+                    "Match Date","Location","Venue"};
             writer.writeNext(header);
 
             for (Match match : matches) {
@@ -58,7 +63,8 @@ public class MatchInformation {
                     matchResult.getScoreTeam2().toString(),
                     matchResult.getWinningTeam().getName(),
                     match.getMatchTime().toString(),
-                    match.getVenue().toString()
+                    match.getVenue().getLocation().getLocationName(),
+                    match.getVenue().getNumber().toString()
                 };
                 writer.writeNext(data);
             }
@@ -70,7 +76,7 @@ public class MatchInformation {
         File tempFile = new File(tempFilePath);
         try {
             exportTournamentMatchesToCSV(tournament, tempFilePath);
-            emailService.sendEmailToUserInTeamWithAttachment(team, emailRequestAllUsers, tempFilePath);
+            emailService.sendEmailToAllUsersInTeamWithAttachment(team, emailRequestAllUsers, tempFilePath);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

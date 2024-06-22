@@ -1,20 +1,20 @@
 package com.fmi.sporttournament.participant.service;
 
+import com.fmi.sporttournament.exception.business.OperationNotAllowedException;
+import com.fmi.sporttournament.exception.resource.ResourceNotFoundException;
+
 import com.fmi.sporttournament.participant.dto.request.ParticipantRequest;
-
 import com.fmi.sporttournament.participant.entity.Participant;
-import com.fmi.sporttournament.team.entity.Team;
+import com.fmi.sporttournament.participant.entity.status.ParticipantStatus;
+import com.fmi.sporttournament.participant.repository.ParticipantRepository;
 
-import com.fmi.sporttournament.team.entity.category.TeamCategory;
-import com.fmi.sporttournament.tournament_participant.entity.status.TournamentParticipantStatus;
-import com.fmi.sporttournament.tournament_participant.repository.TournamentParticipantRepository;
+import com.fmi.sporttournament.team.entity.Team;
+import com.fmi.sporttournament.team.service.TeamValidationService;
+
+import com.fmi.sporttournament.tournament_participant.service.TournamentParticipantValidationService;
 
 import com.fmi.sporttournament.user.entity.User;
-import com.fmi.sporttournament.participant.entity.status.ParticipantStatus;
-
-import com.fmi.sporttournament.participant.repository.ParticipantRepository;
-import com.fmi.sporttournament.team.repository.TeamRepository;
-import com.fmi.sporttournament.user.repository.UserRepositoty;
+import com.fmi.sporttournament.user.service.UserValidationService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,54 +28,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ParticipantService {
     private final ParticipantRepository participantRepository;
-    private final UserRepositoty userRepositoty;
-    private final TeamRepository teamRepository;
-    private final TournamentParticipantRepository tournamentParticipantRepository;
+    private final ParticipantValidationService participantValidationService;
 
-    private User validateUserExist(Long id) {
-        Optional<User> user = userRepositoty.findById(id);
-        if (user.isEmpty()) {
-            throw new IllegalArgumentException("User not found");
-        }
-        return user.get();
-    }
+    private final UserValidationService userValidationService;
 
-    private Team validateTeamExist(Long id) {
-        Optional<Team> team = teamRepository.findById(id);
-        if (team.isEmpty()) {
-            throw new IllegalArgumentException("Team not found");
-        }
-        return team.get();
-    }
+    private final TeamValidationService teamValidationService;
 
-    private void validateTeamNotParticipateInTournament(Team team) {
-        if (!tournamentParticipantRepository.findTournamentsByTeamAndStatus(team, TournamentParticipantStatus.joined)
-            .isEmpty()) {
-            throw new IllegalArgumentException("The team already participate in tournament and it can't be modified");
-        }
-    }
-
-    private Participant validateUserInTeam(User user, Team team) {
-        Optional<Participant> existingParticipant = participantRepository.findByUserAndTeam(user, team);
-        if (existingParticipant.isEmpty()) {
-            throw new IllegalStateException("The user hasn't been a member of this team " + team.getName());
-        }
-        return existingParticipant.get();
-    }
-
-    private void validateUserAgeAndTeamCategory(User user, Team team) {
-        if (user.getAge() > 18 && team.getCategory() == TeamCategory.youth) {
-            throw new IllegalStateException(
-                "The user " + user.getUsername() + " is over 18 year and he/she can't be added to the youth team " +
-                    team.getCategory());
-        }
-    }
-
-    private void checkIfNoUserLeftInTeam(Team team) {
-        if (participantRepository.countParticipantsByTeamAndStatus(team, ParticipantStatus.joined) == 0) {
-            throw new IllegalStateException("The team " + team.getName() + " isn't active");
-        }
-    }
+    private final TournamentParticipantValidationService tournamentParticipantValidationService;
 
     public Participant create(User user, Team team) {
         Participant participant = new Participant();
@@ -94,7 +53,7 @@ public class ParticipantService {
     }
 
     private Participant changeStatus(User user, Team team, ParticipantStatus status) {
-        Participant existingParticipant = validateUserInTeam(user, team);
+        Participant existingParticipant = participantValidationService.validateUserInTeam(user, team);
         existingParticipant.setStatus(status);
         existingParticipant.setTimeStamp(new Date());
         return participantRepository.save(existingParticipant);
@@ -110,17 +69,22 @@ public class ParticipantService {
             ParticipantStatus.left);
     }
 
+    public Participant getParticipantById(Long id) {
+        return participantValidationService.validateParticipantExistById(id);
+    }
+
     public Participant addParticipantToTeam(ParticipantRequest participantRequest) {
-        User user = validateUserExist(participantRequest.getUserId());
-        Team team = validateTeamExist(participantRequest.getTeamId());
+        User user = userValidationService.validateUserIdExist(participantRequest.getUserId());
+        Team team = teamValidationService.validateTeamIdExist(participantRequest.getTeamId());
+        participantValidationService.checkIfNoUserLeftInTeam(team);
 
         if (isUserAlreadyInTeam(user, team)) {
-            throw new IllegalStateException("User is already a participant of the team");
+            throw new OperationNotAllowedException(
+                "User with username " + user.getUsername() + " is already a participant of the team");
         }
 
-        checkIfNoUserLeftInTeam(team);
-        validateTeamNotParticipateInTournament(team);
-        validateUserAgeAndTeamCategory(user, team);
+        tournamentParticipantValidationService.validateTeamNotParticipateInTournament(team);
+        participantValidationService.validateUserAgeAndTeamCategory(user, team);
 
         if (userAlreadyLeft(user, team)) {
             return rejoinTeam(user, team);
@@ -130,16 +94,18 @@ public class ParticipantService {
     }
 
     public Participant removeParticipantFromTeam(ParticipantRequest participantRequest) {
-        User user = validateUserExist(participantRequest.getUserId());
-        Team team = validateTeamExist(participantRequest.getTeamId());
+        User user = userValidationService.validateUserIdExist(participantRequest.getUserId());
+        Team team = teamValidationService.validateTeamIdExist(participantRequest.getTeamId());
 
         if (!participantRepository.existsByUserAndTeam(user, team)) {
-            throw new IllegalStateException("User is not a member of the team");
+            throw new ResourceNotFoundException(
+                "The user with username " + user.getUsername() + " hasn't been a member of the team " + team.getName());
         }
         if (userAlreadyLeft(user, team)) {
-            throw new IllegalStateException("User has already left the team");
+            throw new OperationNotAllowedException(
+                "User with username " + user.getUsername() + " has already left the team " + team.getName());
         }
-        validateTeamNotParticipateInTournament(team);
+        tournamentParticipantValidationService.validateTeamNotParticipateInTournament(team);
         return remove(user, team);
     }
 
