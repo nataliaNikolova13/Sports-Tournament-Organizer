@@ -1,6 +1,7 @@
 package com.fmi.sporttournament.team.service;
 
 import com.fmi.sporttournament.participant.entity.Participant;
+import com.fmi.sporttournament.participant.entity.status.ParticipantStatus;
 import com.fmi.sporttournament.participant.repository.ParticipantRepository;
 import com.fmi.sporttournament.team.dto.request.TeamRequest;
 
@@ -172,6 +173,7 @@ public class TeamService {
     public List<Team> getTeamsForUser(User user) {
         List<Participant> participants = participantRepository.findByUser(user);
         return participants.stream()
+                .filter(participant -> participant.getStatus().equals(ParticipantStatus.joined))
                 .map(Participant::getTeam)
                 .collect(Collectors.toList());
     }
