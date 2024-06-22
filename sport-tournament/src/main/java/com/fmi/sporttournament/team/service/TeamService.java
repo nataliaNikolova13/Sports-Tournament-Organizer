@@ -146,7 +146,7 @@ public class TeamService {
                 .collect(Collectors.toList());
     }
 
-    public Optional<Team> getTeamById(Long teamId) {
-        return teamRepository.findById(teamId);
-    }
+//    public Optional<Team> getTeamById(Long teamId) {
+//        return teamRepository.findById(teamId);
+//    }
 }

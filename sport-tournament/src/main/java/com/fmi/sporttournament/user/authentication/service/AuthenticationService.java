@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -35,7 +37,7 @@ public class AuthenticationService {
         var user = User.builder()
             .fullName(input.getFullName())
             .email(input.getEmail())
-            .birthdate(LocalDate.parse(input.getBirthdate()))
+            .birthdate(input.getBirthdate())
             .password(passwordEncoder.encode(input.getPassword()))
             .role(input.getRole())
             .build();

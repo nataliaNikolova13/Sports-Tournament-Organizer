@@ -37,7 +37,6 @@ public class RoundService {
         return roundRepository.findByTournamentId(id);
     }
 
-    public Round createRound(RoundRequest roundRequest){
     public Round createRound(RoundRequest roundRequest) {
         Round round = roundMapper.requestToRound(roundRequest);
         return roundRepository.save(round);

@@ -4,11 +4,16 @@ import com.fmi.sporttournament.email.emails.tournament.TournamentEnrollmentEmail
 import com.fmi.sporttournament.exception.business.OperationNotAllowedException;
 import com.fmi.sporttournament.exception.resource.ResourceNotFoundException;
 
+import com.fmi.sporttournament.participant.entity.status.ParticipantStatus;
+import com.fmi.sporttournament.participant.repository.ParticipantRepository;
 import com.fmi.sporttournament.participant.service.ParticipantValidationService;
 
 import com.fmi.sporttournament.team.entity.Team;
+import com.fmi.sporttournament.team.repository.TeamRepository;
 import com.fmi.sporttournament.team.service.TeamValidationService;
 
+import com.fmi.sporttournament.tournament.entity.category.TournamentCategory;
+import com.fmi.sporttournament.tournament.repository.TournamentRepository;
 import com.fmi.sporttournament.tournament.service.TournamentValidationService;
 import com.fmi.sporttournament.tournament.entity.Tournament;
 
@@ -17,11 +22,13 @@ import com.fmi.sporttournament.tournament_participant.entity.TournamentParticipa
 import com.fmi.sporttournament.tournament_participant.entity.status.TournamentParticipantStatus;
 import com.fmi.sporttournament.tournament_participant.repository.TournamentParticipantRepository;
 
+import com.fmi.sporttournament.user.entity.User;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +46,9 @@ public class TournamentParticipantService {
     private final ParticipantValidationService participantValidationService;
 
     private final TournamentEnrollmentEmail tournamentEnrolledEmail;
+    private final TournamentRepository tournamentRepository;
+    private final TeamRepository teamRepository;
+    private final ParticipantRepository participantRepository;
 
     private boolean isTeamQueuedTournament(Tournament tournament, Team team) {
         return tournamentParticipantRepository.existsByTournamentIdAndTeamIdAndStatus(tournament.getId(),

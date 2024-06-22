@@ -2,7 +2,7 @@ package com.fmi.sporttournament.team.controller;
 
 import com.fmi.sporttournament.match_result.entity.MatchResult;
 import com.fmi.sporttournament.match_result.service.MatchResultService;
-import com.fmi.sporttournament.team.dto.request.ChangeCategoryRequest;
+//import com.fmi.sporttournament.team.dto.request.ChangeCategoryRequest;
 import com.fmi.sporttournament.team.dto.request.TeamRequest;
 import com.fmi.sporttournament.team.dto.response.TeamResponse;
 import com.fmi.sporttournament.team.entity.Team;
@@ -124,10 +124,10 @@ public class TeamController {
         return teamService.getTeamsForUser(user);
     }
 
-    @GetMapping("/{teamId}")
-    public ResponseEntity<Team> getTeamById(@PathVariable Long teamId) {
-        Optional<Team> team = teamService.getTeamById(teamId);
-        return team.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
+//    @GetMapping("/{teamId}")
+//    public ResponseEntity<Team> getTeamById(@PathVariable Long teamId) {
+//        Optional<Team> team = teamService.getTeamById(teamId);
+//        return team.map(ResponseEntity::ok)
+//                .orElse(ResponseEntity.notFound().build());
+//    }
 }
