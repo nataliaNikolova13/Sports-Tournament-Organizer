@@ -21,4 +21,6 @@ public interface MatchResultRepository extends JpaRepository<MatchResult, Long> 
 
     @Query("SELECT mr FROM MatchResult mr WHERE mr.match.round.tournament = :tournament AND (mr.match.team1 = :team OR mr.match.team2 = :team)")
     List<MatchResult> findAllByTournamentAndTeam(Tournament tournament, Team team);
+
+    List<MatchResult> findByMatch_Team1OrMatch_Team2(Team team1, Team team2);
 }

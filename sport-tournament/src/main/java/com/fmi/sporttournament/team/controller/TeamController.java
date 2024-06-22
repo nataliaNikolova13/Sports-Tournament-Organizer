@@ -1,5 +1,7 @@
 package com.fmi.sporttournament.team.controller;
 
+import com.fmi.sporttournament.match_result.entity.MatchResult;
+import com.fmi.sporttournament.match_result.service.MatchResultService;
 import com.fmi.sporttournament.team.dto.request.ChangeCategoryRequest;
 import com.fmi.sporttournament.team.dto.request.TeamRequest;
 import com.fmi.sporttournament.team.entity.Team;

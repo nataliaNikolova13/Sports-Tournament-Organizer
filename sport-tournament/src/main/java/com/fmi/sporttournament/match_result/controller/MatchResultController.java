@@ -7,6 +7,8 @@ import com.fmi.sporttournament.match_result.mapper.MatchResultMapper;
 
 import com.fmi.sporttournament.match_result.service.MatchResultService;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,5 +60,10 @@ public class MatchResultController {
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+    }
+
+    @GetMapping("/results")
+    public List<MatchResult> getAllMatchResultsForUser() {
+        return matchResultService.getAllMatchResultsForUser();
     }
 }
