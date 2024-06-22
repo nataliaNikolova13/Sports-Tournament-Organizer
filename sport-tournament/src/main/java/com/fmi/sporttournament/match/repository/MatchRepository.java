@@ -19,4 +19,6 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
 
     @Query("SELECT m FROM Match m WHERE m.round.tournament = :tournament AND (m.team1 = :team OR m.team2 = :team) ORDER BY m.round.roundNumber")
     List<Match> findAllByTournamentAndTeamOrderByRoundNumber( Tournament tournament, Team team);
+
+    List<Match> findByRoundId(Long roundId);
 }

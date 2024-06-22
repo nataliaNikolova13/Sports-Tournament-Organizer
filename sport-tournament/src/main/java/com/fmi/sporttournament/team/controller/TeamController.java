@@ -1,11 +1,15 @@
 package com.fmi.sporttournament.team.controller;
 
+import com.fmi.sporttournament.match_result.entity.MatchResult;
+import com.fmi.sporttournament.match_result.service.MatchResultService;
+//import com.fmi.sporttournament.team.dto.request.ChangeCategoryRequest;
 import com.fmi.sporttournament.team.dto.request.TeamRequest;
 import com.fmi.sporttournament.team.dto.response.TeamResponse;
 import com.fmi.sporttournament.team.entity.Team;
 import com.fmi.sporttournament.team.entity.category.TeamCategory;
 import com.fmi.sporttournament.team.mapper.TeamMapper;
 import com.fmi.sporttournament.team.service.TeamService;
+import com.fmi.sporttournament.user.entity.User;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -14,6 +18,11 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -109,4 +118,16 @@ public class TeamController {
         Team team = teamService.updateCategoryByTeamName(teamName, teamCategory);
         return ResponseEntity.ok(teamMapper.teamToResponse(team));
     }
+
+    @GetMapping("/my-teams")
+    public List<Team> getTeamsForCurrentUser(@AuthenticationPrincipal User user) {
+        return teamService.getTeamsForUser(user);
+    }
+
+//    @GetMapping("/{teamId}")
+//    public ResponseEntity<Team> getTeamById(@PathVariable Long teamId) {
+//        Optional<Team> team = teamService.getTeamById(teamId);
+//        return team.map(ResponseEntity::ok)
+//                .orElse(ResponseEntity.notFound().build());
+//    }
 }

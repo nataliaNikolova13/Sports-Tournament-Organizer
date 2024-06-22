@@ -1,5 +1,4 @@
-/* Basic reset for margins and paddings */
-* {
+Basic reset for margins and paddings * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -30,17 +29,6 @@ button:hover {
   background-color: #0056b3;
 }
 
-form {
-  background-color: white;
-  padding: 20px;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
-  margin-top: 20px;
-  width: 400px;
-  align-items: center;
-}
-
 form div {
   margin-bottom: 15px;
 }
@@ -52,7 +40,7 @@ form label {
 }
 
 form input[type="text"] {
-  width: calc(100% - 22px);
+  /* width: calc(100% - 22px); */
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -64,7 +52,7 @@ form button[type="submit"] {
 
 input[type="text"],
 select {
-  width: 100%;
+  /* width: 100%; */
   padding: 10px;
   margin-top: 5px;
   margin-bottom: 5px;
@@ -72,7 +60,6 @@ select {
   border-radius: 5px;
   box-sizing: border-box;
   width: 200px;
-  /* margin-left: -20px; */
 }
 
 input[type="text"]:focus,
@@ -91,4 +78,8 @@ form button[type="button"] {
 
 form button[type="button"]:hover {
   background-color: #c82333;
+}
+
+.form-create-team {
+  margin-top: 30%;
 }

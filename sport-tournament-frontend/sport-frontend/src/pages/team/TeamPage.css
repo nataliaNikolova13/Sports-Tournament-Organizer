@@ -1,0 +1,41 @@
+/* TeamPage.css */
+.container {
+  margin: 20px;
+}
+
+h2 {
+  margin-top: 20px;
+  font-size: 24px;
+  color: #333;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 20px 0;
+}
+
+.li-element {
+  margin: 10px 0;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  transition: background-color 0.3s ease;
+}
+
+.li-element:hover {
+  background-color: #f1f1f1;
+}
+
+h3 {
+  margin: 0 0 10px;
+  font-size: 20px;
+  color: #555;
+}
+
+p {
+  margin: 0;
+  font-size: 16px;
+  color: #777;
+}

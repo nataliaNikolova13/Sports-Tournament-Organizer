@@ -21,6 +21,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -105,5 +107,9 @@ public class ParticipantService {
         }
         tournamentParticipantValidationService.validateTeamNotParticipateInTournament(team);
         return remove(user, team);
+    }
+
+    public List<Participant> getParticipantsByTeamId(Long teamId) {
+        return participantRepository.findByTeamId(teamId);
     }
 }

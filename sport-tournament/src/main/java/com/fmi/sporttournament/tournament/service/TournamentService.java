@@ -21,6 +21,15 @@ import com.fmi.sporttournament.tournament.mapper.TournamentMapper;
 import com.fmi.sporttournament.tournament.repository.TournamentRepository;
 
 import com.fmi.sporttournament.location.entity.Location;
+
+import com.fmi.sporttournament.tournament.entity.Tournament;
+
+import com.fmi.sporttournament.tournament.entity.category.TournamentCategory;
+import com.fmi.sporttournament.tournament.mapper.TournamentMapper;
+
+import com.fmi.sporttournament.location.repository.LocationRepository;
+
+import com.fmi.sporttournament.tournament.repository.TournamentRepository;
 import com.fmi.sporttournament.location.service.LocationValidationService;
 
 import com.fmi.sporttournament.tournament_participant.entity.status.TournamentParticipantStatus;
@@ -37,8 +46,11 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.Instant;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -484,5 +496,11 @@ public class TournamentService {
         for (Tournament tournament : tournaments) {
             startTournamentById(tournament.getId());
         }
+    }
+
+    public List<String> getTournamentCategories() {
+        return Arrays.stream(TournamentCategory.values())
+                .map(Enum::name)
+                .collect(Collectors.toList());
     }
 }

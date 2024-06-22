@@ -28,6 +28,7 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
     @Query("SELECT p.user FROM Participant p WHERE p.team = :team AND p.status = 'joined'")
     List<User> findUsersByTeam(Team team);
 
+    List<Participant> findByTeamId(Long teamId);
     @Query("SELECT DISTINCT p.team FROM Participant p WHERE p.status = 'joined'")
     List<Team> findTeamsWithJoinedParticipants();
 }

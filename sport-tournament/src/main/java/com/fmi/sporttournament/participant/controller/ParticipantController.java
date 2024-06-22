@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/participant")
@@ -37,5 +39,11 @@ public class ParticipantController {
     public ResponseEntity<ParticipantResponse> removeParticipant(@RequestBody @Valid ParticipantRequest participantRequest) {
         Participant participant = participantService.removeParticipantFromTeam(participantRequest);
         return ResponseEntity.ok(participantMapper.participantToResponse(participant));
+    }
+
+    @GetMapping("/{teamId}")
+    public ResponseEntity<List<Participant>> getParticipantsByTeamId(@PathVariable Long teamId) {
+        List<Participant> participants = participantService.getParticipantsByTeamId(teamId);
+        return ResponseEntity.ok(participants);
     }
 }

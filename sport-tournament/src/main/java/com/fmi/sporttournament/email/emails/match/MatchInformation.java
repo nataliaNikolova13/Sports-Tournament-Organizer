@@ -35,11 +35,11 @@ public class MatchInformation {
     private final EmailService emailService;
 
     private MatchResult validateMatchResultByMatchId(Long id) {
-        Optional<MatchResult> matchResult = matchResultRepository.findByMatchId(id);
-        if (matchResult.isEmpty()) {
-            throw new IllegalArgumentException("The match result haven't been recorded");
-        }
-        return matchResult.get();
+        MatchResult matchResult = matchResultRepository.findByMatchId(id);
+//        if (matchResult.isEmpty()) {
+//            throw new IllegalArgumentException("The match result haven't been recorded");
+//        }
+        return matchResult;
     }
 
     private void exportTournamentMatchesToCSV(Tournament tournament, String filePath) throws IOException {

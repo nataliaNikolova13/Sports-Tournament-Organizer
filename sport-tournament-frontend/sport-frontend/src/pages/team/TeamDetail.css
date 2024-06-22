@@ -1,0 +1,67 @@
+.team-detail-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.team-detail-container h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.team-detail-container p {
+  font-size: 16px;
+  margin-bottom: 20px;
+  margin-left: 30%;
+}
+
+.team-detail-container ul {
+  list-style-type: none;
+  padding: 0;
+  margin-left: 30%;
+}
+
+.team-detail-container ul li {
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.team-detail-container .participant-section {
+  margin-top: 20px;
+}
+
+.team-detail-container .participant-section h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.team-detail-container .participant-section select {
+  font-size: 16px;
+  padding: 8px;
+  margin-right: 10px;
+}
+
+.team-detail-container .participant-section button {
+  font-size: 16px;
+  padding: 8px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.team-detail-container .participant-section button:hover {
+  background-color: #0056b3;
+}
+
+.team-detail-container .error-message {
+  color: #ff0000;
+  font-size: 14px;
+  margin-top: 10px;
+}

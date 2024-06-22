@@ -7,6 +7,12 @@ import com.fmi.sporttournament.match_result.entity.MatchResult;
 import com.fmi.sporttournament.match_result.mapper.MatchResultMapper;
 import com.fmi.sporttournament.match_result.repository.MatchResultRepository;
 
+import com.fmi.sporttournament.team.repository.TeamRepository;
+import com.fmi.sporttournament.team.service.TeamService;
+import com.fmi.sporttournament.tournament.entity.Tournament;
+import com.fmi.sporttournament.tournament.repository.TournamentRepository;
+import com.fmi.sporttournament.user.entity.User;
+import com.fmi.sporttournament.user.service.UserService;
 import com.fmi.sporttournament.team.entity.Team;
 import com.fmi.sporttournament.team.service.TeamValidationService;
 
@@ -18,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -27,6 +34,10 @@ import java.util.Random;
 public class MatchResultService {
     private final MatchResultMapper matchResultMapper;
     private final MatchResultRepository matchResultRepository;
+    private final TournamentRepository tournamentRepository;
+    private final TeamRepository teamRepository;
+    private final TeamService teamService;
+    private final UserService userService;
     private final MatchResultValidationService matchResultValidationService;
 
     private final TournamentValidationService tournamentValidationService;
@@ -66,5 +77,18 @@ public class MatchResultService {
 
         MatchResult matchResult = matchResultMapper.requestToMatchResult(matchResultRequest);
         return matchResultRepository.save(matchResult);
+    }
+
+    public List<MatchResult> getAllMatchResultsForUser() {
+        User user = userService.getCurrentUser();
+        List<Team> userTeams = teamService.getTeamsForUser(user);
+        List<MatchResult> allMatchResults = new ArrayList<>();
+
+        for (Team team : userTeams) {
+            List<MatchResult> teamMatchResults = matchResultRepository.findByMatch_Team1OrMatch_Team2(team, team);
+            allMatchResults.addAll(teamMatchResults);
+        }
+
+        return allMatchResults;
     }
 }

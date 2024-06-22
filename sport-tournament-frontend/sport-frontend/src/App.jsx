@@ -9,6 +9,12 @@ import Navbar from "./navbar/Navbar";
 import UserProfile from "./profileInfo/user/UserProfile";
 import { jwtDecode } from "jwt-decode";
 import TeamPage from "./pages/team/TeamPage";
+import TeamDetail from "./pages/team/TeamDetail";
+import TournamentPage from "./pages/tournament/TournamentPage";
+import TournamentDetail from "./pages/tournament/TournamentDetail";
+import AdminPage from "./pages/admin/AdminPage";
+import ResultPage from "./pages/results/ResultPage";
+import RoundDetail from "./pages/round/RoundDetail";
 
 function App() {
   const decodeToken = () => {
@@ -37,6 +43,24 @@ function App() {
           path="/team"
           element={<TeamPage decodeToken={decodeToken}></TeamPage>}
         ></Route>
+        <Route
+          path="/teams/:teamId"
+          element={<TeamDetail>decodeToken={decodeToken}</TeamDetail>}
+        />
+        <Route
+          path="/tournaments"
+          element={<TournamentPage decodeToken={decodeToken}></TournamentPage>}
+        ></Route>
+        <Route
+          path="/admin"
+          element={<AdminPage decodeToken={decodeToken}></AdminPage>}
+        ></Route>
+        <Route path="/tournament/:id" element={<TournamentDetail />} />
+        <Route
+          path="/results"
+          element={<ResultPage decodeToken={decodeToken}></ResultPage>}
+        ></Route>
+        <Route path="/round/:id" element={<RoundDetail></RoundDetail>} />
       </Routes>
     </Router>
   );

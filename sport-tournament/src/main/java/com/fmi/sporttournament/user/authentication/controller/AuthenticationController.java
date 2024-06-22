@@ -32,7 +32,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<RegisterResponse> register(@RequestBody @Valid RegisterUserDto registerUserDto) {
+    public ResponseEntity<RegisterResponse> register(@RequestBody RegisterUserDto registerUserDto) {
         User registeredUser = authenticationService.signup(registerUserDto);
 
         String jwtToken = jwtService.generateToken(registeredUser);

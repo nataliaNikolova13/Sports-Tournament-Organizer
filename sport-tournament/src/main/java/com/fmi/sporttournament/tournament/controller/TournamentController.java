@@ -300,4 +300,14 @@ public class TournamentController {
             tournamentService.updateTournamentTeamMemberCountByTournamentName(tournamentName, newTeamMemberCount);
         return ResponseEntity.ok(tournamentMapper.tournamentToResponse(updatedTournament));
     }
+
+    @GetMapping("/categories")
+    public List<String> getTournamentCategories() {
+        return tournamentService.getTournamentCategories();
+    }
+
+    @GetMapping
+    public List<Tournament> getAllTournaments() {
+        return tournamentService.getAllTournaments();
+    }
 }

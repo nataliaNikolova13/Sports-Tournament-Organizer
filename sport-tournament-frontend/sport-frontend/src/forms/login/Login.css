@@ -28,7 +28,7 @@ form {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  margin-left: 18%;
+  /* margin-left: 10%; */
 }
 
 label {
@@ -44,6 +44,7 @@ input {
   border-radius: 4px;
   font-size: 1rem;
   transition: border-color 0.3s;
+  width: 135%;
 }
 
 input:focus {

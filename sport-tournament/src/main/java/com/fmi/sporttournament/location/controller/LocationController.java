@@ -25,6 +25,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+import java.util.Optional;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/location")
@@ -108,5 +111,10 @@ public class LocationController {
         Location location = locationService.updateVenueCountByLocationName(locationName, newVenueCount);
         Long venueCount = locationService.countVenuesByLocationName(locationName);
         return ResponseEntity.ok(locationMapper.locationToResponse(location, venueCount));
+    }
+
+    @GetMapping
+    public List<Location> getAllLocations() {
+        return locationService.getAllLocations();
     }
 }

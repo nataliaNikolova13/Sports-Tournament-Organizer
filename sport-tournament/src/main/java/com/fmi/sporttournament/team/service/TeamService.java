@@ -1,5 +1,9 @@
 package com.fmi.sporttournament.team.service;
 
+import com.fmi.sporttournament.participant.entity.Participant;
+import com.fmi.sporttournament.participant.entity.status.ParticipantStatus;
+import com.fmi.sporttournament.participant.repository.ParticipantRepository;
+import com.fmi.sporttournament.team.dto.request.TeamRequest;
 import com.fmi.sporttournament.exception.business.OperationNotAllowedException;
 
 import com.fmi.sporttournament.participant.repository.ParticipantRepository;
@@ -23,6 +27,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -131,4 +137,16 @@ public class TeamService {
         Team team = teamValidationService.validateTeamNameExist(teamName);
         return updateCategory(team, teamCategory);
     }
+
+    public List<Team> getTeamsForUser(User user) {
+        List<Participant> participants = participantRepository.findByUser(user);
+        return participants.stream()
+                .filter(participant -> participant.getStatus().equals(ParticipantStatus.joined))
+                .map(Participant::getTeam)
+                .collect(Collectors.toList());
+    }
+
+//    public Optional<Team> getTeamById(Long teamId) {
+//        return teamRepository.findById(teamId);
+//    }
 }

@@ -1,11 +1,14 @@
 package com.fmi.sporttournament.tournament_participant.repository;
 
+import com.fmi.sporttournament.participant.entity.Participant;
+import com.fmi.sporttournament.participant.entity.status.ParticipantStatus;
 import com.fmi.sporttournament.team.entity.Team;
 import com.fmi.sporttournament.tournament.entity.Tournament;
 import com.fmi.sporttournament.tournament_participant.entity.TournamentParticipant;
 
 import com.fmi.sporttournament.tournament_participant.entity.status.TournamentParticipantStatus;
 
+import com.fmi.sporttournament.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import org.springframework.data.jpa.repository.Query;
