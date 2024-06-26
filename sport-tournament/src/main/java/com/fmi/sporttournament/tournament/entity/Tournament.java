@@ -32,14 +32,14 @@ public class Tournament {
     @Column(nullable = false)
     private Long id;
 
-    @Column(nullable = false, name = "tournament_name", unique = true)
+    @Column(name = "tournament_name", nullable = false, unique = true)
     private String tournamentName;
 
-    @Column(nullable = false, name = "sport_type")
+    @Column(name = "sport_type", nullable = false)
     private String sportType;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, name = "tournament_category")
+    @Column(name = "tournament_category", nullable = false)
     private TournamentCategory tournamentCategory;
 
     @ManyToOne

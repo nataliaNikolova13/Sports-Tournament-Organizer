@@ -24,6 +24,6 @@ public class Location {
     @Column(nullable = false)
     private Long id;
 
-    @Column(nullable = false, name = "location_name", unique = true)
+    @Column(name = "location_name", nullable = false, unique = true)
     private String locationName;
 }

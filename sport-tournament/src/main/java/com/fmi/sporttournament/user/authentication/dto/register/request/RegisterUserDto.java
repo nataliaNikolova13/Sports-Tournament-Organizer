@@ -4,6 +4,7 @@ import com.fmi.sporttournament.user.entity.role.Role;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,7 @@ public class RegisterUserDto {
 
     @NotNull
     @NotBlank
+    @Pattern(regexp = ".+@.+\\..+", message = "Invalid email address")
     private String email;
 
     @NotNull

@@ -25,13 +25,13 @@ import java.time.ZoneId;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User implements UserDetails{
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
     private Long id;
 
-    @Column(nullable = false, name="full_name")
+    @Column(name = "full_name", nullable = false)
     private String fullName;
 
     @Column(name = "birthdate")
@@ -52,7 +52,7 @@ public class User implements UserDetails{
     private Date updatedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(name="role")
+    @Column(name = "role", nullable = false)
     private Role role;
 
     @Override

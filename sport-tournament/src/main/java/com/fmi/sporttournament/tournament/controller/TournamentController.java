@@ -88,7 +88,6 @@ public class TournamentController {
     @PostMapping("/start-tournament/{id}")
     public ResponseEntity<TournamentResponse> startTournament(@PathVariable Long id) {
         try {
-
             Tournament tournament = tournamentService.startTournamentById(id);
             return ResponseEntity.ok(tournamentMapper.tournamentToResponse(tournament));
         } catch (IOException ex) {

@@ -37,6 +37,9 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.time.Instant;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -126,7 +129,7 @@ public class TournamentService {
         return tournamentRepository.save(tournament);
     }
 
-    private void sendTournamentCancellationEmailToParticipants(Tournament tournament){
+    private void sendTournamentCancellationEmailToParticipants(Tournament tournament) {
         List<Team> teams = tournamentParticipantRepository.findAllEnrolledTeamsInTournament(tournament);
         for (Team team : teams) {
             tournamentCancellationEmail.sendTournamentCancellationEmail(team, tournament.getTournamentName());
@@ -476,10 +479,15 @@ public class TournamentService {
         return tournament;
     }
 
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 0 * * *", zone = "UTC")
     public void startTournaments() throws IOException {
-        Date today = Date.from(Instant.now());
-        List<Tournament> tournaments = tournamentRepository.findByStartAt(today);
+        ZonedDateTime startOfToday = LocalDate.now(ZoneId.of("UTC")).atStartOfDay(ZoneId.of("UTC"));
+        ZonedDateTime endOfToday = startOfToday.plusDays(1);
+
+        Date startOfTodayDate = Date.from(startOfToday.toInstant());
+        Date endOfTodayDate = Date.from(endOfToday.toInstant());
+
+        List<Tournament> tournaments = tournamentRepository.findTournamentsByStartAtBetween(startOfTodayDate, endOfTodayDate);
 
         for (Tournament tournament : tournaments) {
             startTournamentById(tournament.getId());
