@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,18 +31,21 @@ public class MatchResultController {
     private final MatchResultMapper matchResultMapper;
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<MatchResultResponse> getMatchResultById(@PathVariable Long id) {
         MatchResult matchResult = matchResultService.getMatchResultById(id);
         return ResponseEntity.ok(matchResultMapper.matchResultToResponse(matchResult));
     }
 
     @GetMapping("/tournament/name/{tournamentName}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<List<MatchResultResponse>> getMatchByTournamentName(@PathVariable String tournamentName) {
         List<MatchResult> matches = matchResultService.getMatchResultsForTournamentByTournamentName(tournamentName);
         return ResponseEntity.ok(matchResultMapper.matchResultsToResponse(matches));
     }
 
     @GetMapping("/tournament/team")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<List<MatchResultResponse>> getMatchByTournamentAndTeam(@RequestBody @Valid
                                                                                  MatchResultTeamTournamentRequest matchResultTeamTournamentRequest) {
         String tournamentName = matchResultTeamTournamentRequest.getTournamentName();
@@ -52,6 +56,7 @@ public class MatchResultController {
     }
 
     @GetMapping("/results")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public List<MatchResult> getAllMatchResultsForUser() {
         return matchResultService.getAllMatchResultsForUser();
     }

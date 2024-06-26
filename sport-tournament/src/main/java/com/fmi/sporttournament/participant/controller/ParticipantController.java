@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,24 +25,28 @@ public class ParticipantController {
     private final ParticipantMapper participantMapper;
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<ParticipantResponse> getMatchById(@PathVariable Long id) {
         Participant participant = participantService.getParticipantById(id);
         return ResponseEntity.ok(participantMapper.participantToResponse(participant));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<ParticipantResponse> addParticipant(@RequestBody @Valid ParticipantRequest participantRequest) {
         Participant participant = participantService.addParticipantToTeam(participantRequest);
         return ResponseEntity.ok(participantMapper.participantToResponse(participant));
     }
 
     @DeleteMapping
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<ParticipantResponse> removeParticipant(@RequestBody @Valid ParticipantRequest participantRequest) {
         Participant participant = participantService.removeParticipantFromTeam(participantRequest);
         return ResponseEntity.ok(participantMapper.participantToResponse(participant));
     }
 
-    @GetMapping("/{teamId}")
+    @GetMapping("/team/{teamId}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<List<Participant>> getParticipantsByTeamId(@PathVariable Long teamId) {
         List<Participant> participants = participantService.getParticipantsByTeamId(teamId);
         return ResponseEntity.ok(participants);

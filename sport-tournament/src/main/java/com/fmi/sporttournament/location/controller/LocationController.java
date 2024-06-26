@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -36,6 +37,7 @@ public class LocationController {
     private final LocationMapper locationMapper;
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<LocationResponse> getLocationById(@PathVariable Long id) {
         Location location = locationService.getLocationById(id);
         Long venueCount = locationService.countVenuesByLocationId(id);
@@ -43,6 +45,7 @@ public class LocationController {
     }
 
     @GetMapping("/name/{locationName}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<LocationResponse> getLocationByName(@PathVariable String locationName) {
         Location location = locationService.getLocationByName(locationName);
         Long venueCount = locationService.countVenuesByLocationId(location.getId());
@@ -50,6 +53,7 @@ public class LocationController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<LocationResponse> createLocation(@RequestBody @Valid LocationRequest locationRequest) {
         Location location = locationService.createLocation(locationRequest);
         Long locationId = location.getId();
@@ -58,18 +62,21 @@ public class LocationController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<Void> deleteLocationById(@PathVariable Long id) {
         locationService.deleteLocation(id);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/name/{locationName}")
+    @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<Void> deleteLocationByLocationName(@PathVariable String locationName) {
         locationService.deleteByLocationName(locationName);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<LocationResponse> updateLocation(@PathVariable Long id,
                                                            @RequestBody @Valid LocationRequest locationRequest) {
         Location location = locationService.updateLocation(id, locationRequest);
@@ -78,6 +85,7 @@ public class LocationController {
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<LocationResponse> updateLocationNameById(@PathVariable Long id,
                                                                    @RequestParam(name = "new-location-name")
                                                                    @NotNull @NotBlank String newLocationName) {
@@ -87,6 +95,7 @@ public class LocationController {
     }
 
     @PatchMapping("/name/{currentLocationName}")
+    @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<LocationResponse> updateLocationNameByLocationName(@PathVariable String currentLocationName,
                                                                              @RequestParam(name = "new-location-name")
                                                                              @NotNull @NotBlank String newLocationName) {
@@ -96,6 +105,7 @@ public class LocationController {
     }
 
     @PatchMapping("{id}/venues")
+    @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<LocationResponse> updateVenueCountById(@PathVariable Long id,
                                                                  @RequestParam(name = "new-venue-count")
                                                                  @Min(1) Long newVenueCount) {
@@ -105,6 +115,7 @@ public class LocationController {
     }
 
     @PatchMapping("name/{locationName}/venues")
+    @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<LocationResponse> updateVenueCountByLocationName(@PathVariable String locationName,
                                                                            @RequestParam(name = "new-venue-count")
                                                                            @Min(1) Long newVenueCount) {
@@ -114,6 +125,7 @@ public class LocationController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public List<Location> getAllLocations() {
         return locationService.getAllLocations();
     }

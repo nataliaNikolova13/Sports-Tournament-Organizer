@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,18 +29,21 @@ public class MatchController {
     private final MatchMapper matchMapper;
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<MatchResponse> getMatchById(@PathVariable Long id) {
         Match match = matchService.getMatchById(id);
         return ResponseEntity.ok(matchMapper.matchToResponse(match));
     }
 
     @GetMapping("/tournament/name/{tournamentName}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<List<MatchResponse>> getMatchByTournamentName(@PathVariable String tournamentName) {
         List<Match> matches = matchService.getMatchesByTournamentName(tournamentName);
         return ResponseEntity.ok(matchMapper.matchesToResponse(matches));
     }
 
     @GetMapping("/tournament/team")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<List<MatchResponse>> getMatchByTournamentAndTeam(
         @RequestBody @Valid MatchTeamTournamentRequest matchTeamTournamentRequest) {
         String tournamentName = matchTeamTournamentRequest.getTournamentName();

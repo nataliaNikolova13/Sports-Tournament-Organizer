@@ -18,6 +18,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,42 +46,49 @@ public class TeamController {
     private final TeamMapper teamMapper;
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<TeamResponse> getTeamById(@PathVariable Long id) {
         Team team = teamService.getTeamById(id);
         return ResponseEntity.ok(teamMapper.teamToResponse(team));
     }
 
     @GetMapping("/all")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<List<TeamResponse>> getAllTeams() {
         List<Team> team = teamService.getAllTeams();
         return ResponseEntity.ok(teamMapper.teamsToResponse(team));
     }
 
     @GetMapping("/all-active-teams")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<List<TeamResponse>> getAllActiveTeams() {
         List<Team> team = teamService.getAllActiveTeams();
         return ResponseEntity.ok(teamMapper.teamsToResponse(team));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<TeamResponse> createTeam(@RequestBody @Valid TeamRequest teamRegistrationRequest) {
         Team team = teamService.createTeam(teamRegistrationRequest);
         return ResponseEntity.ok(teamMapper.teamToResponse(team));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<Void> deleteTeamById(@PathVariable Long id) {
         teamService.deleteTeamById(id);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/name/{teamName}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<Void> deleteTournamentByTournamentName(@PathVariable String teamName) {
         teamService.deleteTeamByTournamentName(teamName);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<TeamResponse> updateTeamNameById(@PathVariable Long id,
                                                            @RequestBody @Valid TeamRequest teamRequest) {
         Team team = teamService.updateTeam(id, teamRequest);
@@ -88,6 +96,7 @@ public class TeamController {
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<TeamResponse> updateTeamNameById(@PathVariable Long id,
                                                            @RequestParam(name = "new-team-name")
                                                            @NotNull @NotBlank String newTeamName) {
@@ -96,6 +105,7 @@ public class TeamController {
     }
 
     @PatchMapping("/name/{currentTeamName}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<TeamResponse> updateTeamNameByTeamName(@RequestParam String currentTeamName,
                                                                  @RequestParam(name = "new-team-name")
                                                                  @NotNull @NotBlank String newTeamName) {
@@ -104,6 +114,7 @@ public class TeamController {
     }
 
     @PatchMapping("/{id}/category")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<TeamResponse> updateCategoryById(@PathVariable Long id,
                                                            @RequestParam(name = "new-category")
                                                            TeamCategory teamCategory) {
@@ -112,6 +123,7 @@ public class TeamController {
     }
 
     @PatchMapping("/name/{teamName}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<TeamResponse> updateCategoryByTeamName(@RequestParam String teamName,
                                                                  @RequestParam(name = "new-category")
                                                                  TeamCategory teamCategory) {
@@ -120,6 +132,7 @@ public class TeamController {
     }
 
     @GetMapping("/my-teams")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public List<Team> getTeamsForCurrentUser(@AuthenticationPrincipal User user) {
         return teamService.getTeamsForUser(user);
     }

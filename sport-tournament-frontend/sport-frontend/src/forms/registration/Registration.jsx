@@ -65,9 +65,8 @@ const RegistrationForm = () => {
         setIsLogged(true);
         navigate("/");
       } catch (error) {
-        setRegistrationError(
-          "There is an already registered user with this email"
-        );
+            const errorMessage = error.response?.data || "An error occurred during registration.";
+            setRegistrationError(errorMessage);
       }
     }
   };

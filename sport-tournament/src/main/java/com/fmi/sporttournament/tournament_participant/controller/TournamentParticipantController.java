@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,12 +28,14 @@ public class TournamentParticipantController {
     private final TournamentParticipantMapper tournamentParticipantMapper;
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<TournamentParticipantResponse> getMatchById(@PathVariable Long id) {
         TournamentParticipant tournamentParticipant = tournamentParticipantService.getTournamentParticipantById(id);
         return ResponseEntity.ok(tournamentParticipantMapper.tournamentParticipantToResponse(tournamentParticipant));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<TournamentParticipantResponse> addTeamToTournament(@RequestBody
                                                                              @Valid TournamentParticipantRequest tournamentParticipantRequest) {
         TournamentParticipant tournamentParticipant = tournamentParticipantService.addTeamToTournament(
@@ -42,6 +45,7 @@ public class TournamentParticipantController {
     }
 
     @DeleteMapping
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<Void> deleteParticipantFromTeam(
         @RequestBody @Valid TournamentParticipantRequest tournamentParticipantRequest) {
         TournamentParticipant tournamentParticipant = tournamentParticipantService.deleteParticipantFromTeam(

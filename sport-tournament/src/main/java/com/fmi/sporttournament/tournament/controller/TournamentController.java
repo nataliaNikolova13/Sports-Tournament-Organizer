@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -43,42 +44,49 @@ public class TournamentController {
     private final TournamentMapper tournamentMapper;
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<TournamentResponse> getTournamentById(@PathVariable Long id) {
         Tournament tournament = tournamentService.getTournamentById(id);
         return ResponseEntity.ok(tournamentMapper.tournamentToResponse(tournament));
     }
 
     @GetMapping("/name/{tournamentName}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<TournamentResponse> getTournamentByTournamentName(@PathVariable String tournamentName) {
         Tournament tournament = tournamentService.getTournamentByTournamentName(tournamentName);
         return ResponseEntity.ok(tournamentMapper.tournamentToResponse(tournament));
     }
 
     @GetMapping("/location/{locationName}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<List<TournamentResponse>> getTournamentsByLocationName(@PathVariable String locationName) {
         List<Tournament> tournaments = tournamentService.getTournamentByLocationName(locationName);
         return ResponseEntity.ok(tournamentMapper.tournamentsToResponse(tournaments));
     }
 
     @GetMapping("/sport/{sportType}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<List<TournamentResponse>> getTournamentsBySportType(@PathVariable String sportType) {
         List<Tournament> tournaments = tournamentService.getTournamentBySportType(sportType);
         return ResponseEntity.ok(tournamentMapper.tournamentsToResponse(tournaments));
     }
 
     @GetMapping("/all")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<List<TournamentResponse>> getAllTournament() {
       List<Tournament> tournament = tournamentService.getAllTournaments();
         return ResponseEntity.ok(tournamentMapper.tournamentsToResponse(tournament));
     }
 
     @GetMapping("/all-active-tournaments")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<List<TournamentResponse>> getAllValidTournament() {
         List<Tournament> tournament = tournamentService.getAllValidTournaments();
         return ResponseEntity.ok(tournamentMapper.tournamentsToResponse(tournament));
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer'))")
     public ResponseEntity<TournamentResponse> createTournament(
         @RequestBody @Valid TournamentRegistrationRequest tournamentRequest) {
         Tournament tournament = tournamentService.createTournament(tournamentRequest);
@@ -86,6 +94,7 @@ public class TournamentController {
     }
 
     @PostMapping("/start-tournament/{id}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') ")
     public ResponseEntity<TournamentResponse> startTournament(@PathVariable Long id) {
         try {
 
@@ -97,18 +106,21 @@ public class TournamentController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<Void> deleteTournamentById(@PathVariable Long id) {
         tournamentService.deleteTournamentById(id);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/name/{tournamentName}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<Void> deleteTournamentByTournamentName(@PathVariable String tournamentName) {
         tournamentService.deleteTournamentByTournamentName(tournamentName);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> updateTournament(@PathVariable Long id,
                                                                @RequestBody @Valid
                                                                TournamentRegistrationRequest tournamentRegistrationRequest) {
@@ -117,6 +129,7 @@ public class TournamentController {
     }
 
     @PatchMapping("/{id}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> updateTournamentNameById(@PathVariable Long id,
                                                                        @RequestParam(name = "new-tournament-name")
                                                                        @NotNull @NotBlank String newTournamentName) {
@@ -126,6 +139,7 @@ public class TournamentController {
     }
 
     @PatchMapping("/name/{currentTournamentName}")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> updateTournamentNameByTournamentName(
         @PathVariable String currentTournamentName,
         @RequestParam(name = "new-tournament-name")
@@ -137,6 +151,7 @@ public class TournamentController {
     }
 
     @PatchMapping("/{id}/location")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> updateTournamentLocationByTId(@PathVariable Long id,
                                                                             @RequestParam(name = "new-tournament-location")
                                                                             @NotNull @NotBlank
@@ -147,6 +162,7 @@ public class TournamentController {
     }
 
     @PatchMapping("/name/{tournamentName}/location")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> updateTournamentLocationByTournamentName(
         @PathVariable String tournamentName,
         @RequestParam(name = "new-tournament-location")
@@ -157,6 +173,7 @@ public class TournamentController {
     }
 
     @PatchMapping("/{id}/sport")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> updateTournamentSportTypeById(@PathVariable Long id,
                                                                             @RequestParam(name = "new-sport-type")
                                                                             @NotNull @NotBlank
@@ -166,6 +183,7 @@ public class TournamentController {
     }
 
     @PatchMapping("/name/{tournamentName}/sport")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> updateTournamentSportTypeByTournamentName(
         @PathVariable String tournamentName,
         @RequestParam(name = "new-sport-type")
@@ -177,6 +195,7 @@ public class TournamentController {
     }
 
     @PatchMapping("/{id}/category")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> updateTournamentCategoryById(@PathVariable Long id,
                                                                            @RequestParam(name = "new-category")
                                                                            TournamentCategory newCategory) {
@@ -185,6 +204,7 @@ public class TournamentController {
     }
 
     @PatchMapping("/name/{tournamentName}/category")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> updateTournamentCategoryByTournamentName(
         @PathVariable String tournamentName,
         @RequestParam(name = "new-category")
@@ -196,6 +216,7 @@ public class TournamentController {
     }
 
     @PatchMapping("/{id}/dates")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> updateTournamentDatesById(@PathVariable Long id,
                                                                         @RequestBody @Valid DateRequest dateRequest) {
         Date newStartAt = dateRequest.getStartAt();
@@ -206,6 +227,7 @@ public class TournamentController {
     }
 
     @PatchMapping("/name/{tournamentName}/dates")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> updateTournamentDatesByTournamentName(@PathVariable String
                                                                                         tournamentName,
                                                                                     @RequestBody @Valid
@@ -218,6 +240,7 @@ public class TournamentController {
     }
 
     @PatchMapping("/{id}/match-duration")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> updateTournamentMatchDurationById(
         @PathVariable Long id,
         @RequestParam(name = "new-match-duration")
@@ -229,6 +252,7 @@ public class TournamentController {
     }
 
     @PatchMapping("/name/{tournamentName}/match-duration")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> updateTournamentMatchDurationByTournamentName(
         @PathVariable String tournamentName,
         @RequestParam(name = "new-match-duration")
@@ -240,6 +264,7 @@ public class TournamentController {
     }
 
     @PatchMapping("/{id}/hours")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> updateTournamentHoursById(
         @PathVariable Long id, @RequestBody @Valid HourRequest hourRequest) {
         Integer newStartHour = hourRequest.getStartHour();
@@ -250,6 +275,7 @@ public class TournamentController {
     }
 
     @PatchMapping("/name/{tournamentName}/hours")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> updateTournamentHoursByTournamentName(
         @PathVariable String tournamentName, @RequestBody @Valid HourRequest hourRequest) {
         Integer newStartHour = hourRequest.getStartHour();
@@ -260,6 +286,7 @@ public class TournamentController {
     }
 
     @PatchMapping("/{id}/team-count")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> updateTournamentTeamCountById(
         @PathVariable Long id,
         @RequestParam(name = "new-team-count")
@@ -270,6 +297,7 @@ public class TournamentController {
     }
 
     @PutMapping("/name/{tournamentName}/team-count")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> updateTournamentTeamCountByTournamentName(
         @PathVariable String tournamentName,
         @RequestParam(name = "new-team-count")
@@ -281,6 +309,7 @@ public class TournamentController {
     }
 
     @PatchMapping("/{id}/team-member-count")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> updateTournamentTeamMemberCountById(
         @PathVariable Long id,
         @RequestParam(name = "new-team-member-count")
@@ -291,6 +320,7 @@ public class TournamentController {
     }
 
     @PutMapping("/name/{tournamentName}/team-member-count")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> updateTournamentTeamMemberCountByTournamentName(
         @PathVariable String tournamentName,
         @RequestParam(name = "new-team-member-count")
@@ -302,11 +332,13 @@ public class TournamentController {
     }
 
     @GetMapping("/categories")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public List<String> getTournamentCategories() {
         return tournamentService.getTournamentCategories();
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public List<Tournament> getAllTournaments() {
         return tournamentService.getAllTournaments();
     }

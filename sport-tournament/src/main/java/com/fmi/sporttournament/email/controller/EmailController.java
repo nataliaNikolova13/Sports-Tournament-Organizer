@@ -7,6 +7,7 @@ import com.fmi.sporttournament.email.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,6 +17,7 @@ public class EmailController {
     private EmailService emailService;
 
     @PostMapping("/send-email")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<EmailResponse> sendEmailToUserByEmail(@RequestBody
                                                                 EmailRequestOneUser email) {
         try {
@@ -30,6 +32,7 @@ public class EmailController {
     }
 
     @PostMapping("/send-email-to-all")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<Void> sendEmailToAllUsers(@RequestBody EmailRequestAllUsers email) {
         try {
             emailService.sendEmailToAllUsers(email);

@@ -60,7 +60,8 @@ const LoginForm = () => {
         setIsLogged(true);
         navigate("/");
       } catch (error) {
-        setLoginError("No such user");
+        const errorMessage = error.response?.data || "An error occurred during login.";
+                    setLoginError(errorMessage);
       }
     }
   };

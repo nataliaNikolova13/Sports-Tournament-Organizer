@@ -4,7 +4,7 @@ import "./TournamentDetail.css";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import Modal from "../../modal/Modal";
-import ParticipantForm from "../../forms/participant/ParticipantForm";
+import TournamentParticipantForm from "../../forms/tournament-participant/TournamentParticipantForm";
 
 const TournamentDetail = () => {
   const { id } = useParams();
@@ -26,8 +26,8 @@ const TournamentDetail = () => {
           }
         );
         setTournament(response.data);
-      } catch (err) {
-        setError("Error fetching tournament details. Please try again later.");
+      } catch (error) {
+        setError(error.response?.data||"Error fetching tournament details. Please try again later.");
       }
     };
 
@@ -47,8 +47,8 @@ const TournamentDetail = () => {
           }
         );
         setRounds(response.data);
-      } catch (err) {
-        setError("Error fetching rounds. Please try again later.");
+      } catch (error) {
+        setError(error.response?.data||"Error fetching rounds. Please try again later.");
       }
     };
     fetchRounds();
@@ -106,7 +106,7 @@ const TournamentDetail = () => {
         </button>
 
         <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-          <ParticipantForm
+          <TournamentParticipantForm
             tournamentName={tournament.tournamentName}
             onClose={() => setIsModalOpen(false)}
           />
