@@ -32,7 +32,7 @@ const TeamPage = ({ decodeToken }) => {
     <>
       <CreateTeam></CreateTeam>
       <h2>My Teams</h2>
-      <ul>
+      <ul className="ul-teams">
         {teams.map((team) => (
           <li className="li-element" key={team.id}>
             <Link to={`/teams/${team.id}`} className="team-link">
