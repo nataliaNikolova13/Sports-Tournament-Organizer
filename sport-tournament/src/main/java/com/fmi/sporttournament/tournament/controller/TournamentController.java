@@ -86,7 +86,7 @@ public class TournamentController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('Admin') or hasRole('Organizer'))")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> createTournament(
         @RequestBody @Valid TournamentRegistrationRequest tournamentRequest) {
         Tournament tournament = tournamentService.createTournament(tournamentRequest);

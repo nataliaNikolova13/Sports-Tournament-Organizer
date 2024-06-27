@@ -22,12 +22,12 @@ const CreateTournamentForm = () => {
     matchDuration: 0,
     teamMemberCount: 0,
   });
-  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       const decodedToken = jwtDecode(token);
+      console.log("token");
       if (
         decodedToken.role === "[ROLE_Organizer]" ||
         decodedToken.role === "[ROLE_Admin]"
@@ -50,9 +50,10 @@ const CreateTournamentForm = () => {
           }
         );
         setCategories(response.data);
+        console.log(response.data);
       } catch (error) {
+        setError("There was an error fetching the categories!");
         console.error("Error fetching categories:", error);
-        setErrorMessage("Failed to fetch categories.");
       }
     };
 
@@ -65,9 +66,9 @@ const CreateTournamentForm = () => {
           },
         });
         setLocations(response.data);
+        console.log(response.data);
       } catch (error) {
         console.error("Error fetching locations:", error);
-        setErrorMessage("Failed to fetch locations.");
       }
     };
 
@@ -82,6 +83,7 @@ const CreateTournamentForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(tournamentData);
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
@@ -96,10 +98,9 @@ const CreateTournamentForm = () => {
       );
       console.log("Tournament created:", response.data);
       setStatus("Tournament was created");
-      setErrorMessage(""); // Clear any previous error messages
-    } catch (error) {
-      console.error("Error creating tournament:", error);
-        setErrorMessage(error.response?.data|| "An error occurred while creating the tournament.");
+    } catch (err) {
+      console.error("Error creating tournament:", err);
+      setStatus("Error when creating tournament");
     }
   };
 
@@ -246,7 +247,6 @@ const CreateTournamentForm = () => {
             </div>
             <button type="submit">Create Tournament</button>
           </form>
-          {errorMessage && <p className="error-message">{errorMessage}</p>}
           <p>{status}</p>
         </>
       )}

@@ -6,7 +6,7 @@ const CreateTeam = () => {
   const [showForm, setShowForm] = useState(false);
   const [hideButton, setHideButton] = useState(true);
   const [categories, setCategories] = useState([]);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errors, setError] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     category: "amateur",
@@ -27,7 +27,6 @@ const CreateTeam = () => {
         setCategories(response.data);
       } catch (error) {
         console.error("There was an error fetching the categories!", error);
-        setErrorMessage("Failed to fetch categories.");
       }
     };
 
@@ -51,7 +50,6 @@ const CreateTeam = () => {
   const handleCancel = () => {
     setShowForm(false);
     setHideButton(true);
-    setErrorMessage(""); // Clear any previous error message on cancel
   };
 
   const handleSubmit = async (e) => {
@@ -71,10 +69,9 @@ const CreateTeam = () => {
       setShowForm(false);
       setHideButton(true);
       setFormData({ name: "", category: "amateur" });
-      setErrorMessage(""); // Clear any previous error message on successful submission
     } catch (error) {
       console.error("There was an error creating the team!", error);
-        setErrorMessage(error.response?.data || "An error occurred while creating the team.");
+      setError(true);
     }
   };
 
@@ -113,13 +110,13 @@ const CreateTeam = () => {
           </div>
           <div className="buttons">
             <button type="submit">Submit</button>
-            <button type="button" onClick={handleCancel}>
+            <button type="button" onClick={() => handleCancel()}>
               Cancel
             </button>
           </div>
-          {errorMessage && (
-            <div className="error-message">
-              <p>{errorMessage}</p>
+          {errors && (
+            <div>
+              <p>There was an error when creating a team</p>
             </div>
           )}
         </form>

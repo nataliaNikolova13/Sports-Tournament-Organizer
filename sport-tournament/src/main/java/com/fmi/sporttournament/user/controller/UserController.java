@@ -30,7 +30,7 @@ public class UserController {
     private final UserMapper userMapper;
 
     @GetMapping
-    @PreAuthorize("hasRole('Admin')")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
     public ResponseEntity<List<UserDto>> getAllUsers() {
         List<User> allUsers = userService.getAllUsers();
         return new ResponseEntity<>(userMapper.usersToUserDtos(allUsers), HttpStatus.OK);

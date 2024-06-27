@@ -3,7 +3,6 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import "./TeamDetail.css";
-import ParticipantForm from "../../forms/participant/ParticipantForm";
 
 const TeamDetail = ({ decodeToken }) => {
   const { teamId } = useParams();
@@ -27,8 +26,8 @@ const TeamDetail = ({ decodeToken }) => {
           }
         );
         setTeam(response.data);
-      } catch (error) {
-        setError(error.response?.body||"There was an error fetching the team.");
+      } catch (err) {
+        setError("There was an error fetching the team.");
       }
     };
 
@@ -48,36 +47,124 @@ const TeamDetail = ({ decodeToken }) => {
           }
         );
         setParticipants(response.data);
-      } catch (error) {
-        setError(error.response?.body||"There was an error fetching the team Participants.");
+      } catch (err) {
+        setError("There was an error fetching the team Participants.");
       }
     };
 
     fetchTeamParticipants();
   }, [teamId, added]);
 
-    const closeParticipantForm = () => {
-      setAdded(!added);
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get("http://localhost:8080/user", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setUsers(response.data);
+      } catch (err) {
+        setError("There was an error fetching users.");
+      }
     };
 
-  return (
-      <div className="team-detail-container">
-        <h2>{team.name}</h2>
-        <p>Category: {team.category}</p>
-        <h2>Team Participants</h2>
-        <ul>
-          {participants.map((participant) => (
-            <li key={participant.id}>
-              {participant.user.email} - Status: {participant.status}
-            </li>
-          ))}
-        </ul>
-        <div className="participant-section">
-          <ParticipantForm teamId={teamId} onClose={closeParticipantForm} />
-        </div>
-        {error && <div className="error-message">{error}</div>}
-      </div>
-    );
+    fetchUsers();
+  }, []);
+
+  const handleAddParticipant = async () => {
+    setAdded(false);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        "http://localhost:8080/participant",
+        {
+          userId: selectedUser,
+          teamId: teamId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("Participant added:", response.data);
+      setAdded(true);
+    } catch (err) {
+      setError("There was an error adding the participant.");
+    }
   };
+
+  const handleDeleteParticipant = async () => {
+    setAdded(true);
+    try {
+      const token = localStorage.getItem("token");
+      console.log(selectedUser);
+      await axios.delete("http://localhost:8080/participant", {
+        data: {
+          userId: selectedUser,
+          teamId: teamId,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      setAdded(false);
+      //   selectedUser(null);
+    } catch (err) {
+      setError("There was an error deleting the participant.");
+    }
+  };
+
+  if (error) return <div>{error}</div>;
+
+  return (
+    <div className="team-detail-container">
+      <h2>{team.name}</h2>
+      <p>Category: {team.category}</p>
+      <h2>Team Participants</h2>
+      <ul>
+        {participants.map((participant) => (
+          <li key={participant.id}>
+            {participant.user.fullName} - Status: {participant.status}
+          </li>
+        ))}
+      </ul>
+      <div className="participant-section">
+        <h3>Add Participant</h3>
+        <select
+          value={selectedUser}
+          onChange={(e) => setSelectedUser(e.target.value)}
+        >
+          <option value="">Select a user</option>
+          {users.map((user) => (
+            <option key={user.id} value={user.id}>
+              {user.fullName}
+            </option>
+          ))}
+        </select>
+        <button onClick={handleAddParticipant}>Add Participant</button>
+        <h3>Delete Participant</h3>
+        <select
+          value={selectedUser}
+          onChange={(e) => setSelectedUser(e.target.value)}
+        >
+          <option value="">Select a user</option>
+          {users.map((user) => (
+            <option key={user.id} value={user.id}>
+              {user.fullName}
+            </option>
+          ))}
+        </select>
+        <button onClick={handleDeleteParticipant}>Delete Participant</button>
+      </div>
+      {error && <div className="error-message">{error}</div>}
+    </div>
+  );
+};
 
 export default TeamDetail;
