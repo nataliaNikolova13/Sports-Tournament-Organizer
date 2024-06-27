@@ -39,7 +39,7 @@ const TeamDetail = ({ decodeToken }) => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          `http://localhost:8080/participant/${teamId}`,
+          `http://localhost:8080/participant/team/${teamId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
