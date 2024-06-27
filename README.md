@@ -55,7 +55,7 @@ npm run dev
 
 ## Running the Application
 ### Frontend 
-- Can be accessed through http://localhost:3000
+- Can be accessed through http://localhost:5173
 ### Backend
  - The backend API will be running at http://localhost:8080
 ### Testing 
