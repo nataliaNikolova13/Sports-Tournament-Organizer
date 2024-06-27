@@ -47,7 +47,7 @@ const CreateLocationForm = () => {
       setStatus("Location was created");
     } catch (err) {
       console.error("Error creating location:", err);
-      setStatus(error.response?.data || "Error when creating location");
+      setStatus(err.response?.data || "Error when creating location");
     }
   };
 
