@@ -41,7 +41,7 @@ public class ParticipantController {
         return ResponseEntity.ok(participantMapper.participantToResponse(participant));
     }
 
-    @GetMapping("/{teamId}")
+    @GetMapping("/team/{teamId}")
     public ResponseEntity<List<Participant>> getParticipantsByTeamId(@PathVariable Long teamId) {
         List<Participant> participants = participantService.getParticipantsByTeamId(teamId);
         return ResponseEntity.ok(participants);

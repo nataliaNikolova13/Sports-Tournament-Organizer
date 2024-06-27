@@ -52,10 +52,10 @@ const UserProfile = ({ decodeToken }) => {
         <label>Role:</label>
         <p>{user.role}</p>
       </div>
-      <div className="buttons">
+      {/* <div className="buttons">
         <button className="edit-button">Edit</button>
         <button className="delete-button">Delete</button>
-      </div>
+      </div> */}
     </div>
   );
 };
