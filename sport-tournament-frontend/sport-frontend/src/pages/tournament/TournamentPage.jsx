@@ -3,6 +3,7 @@ import axios from "axios";
 import "./TournamentPage.css";
 import { Link } from "react-router-dom";
 import CreateTournamentForm from "../../forms/tournamentCreate/CreateTournamentForm";
+import CreateLocationForm from "../../forms/tournamentCreate/LocationCreate";
 
 const TournamentPage = ({ decodeToken }) => {
   const [tournaments, setTournaments] = useState([]);
@@ -28,8 +29,7 @@ const TournamentPage = ({ decodeToken }) => {
   }, []);
   return (
     <>
-      <CreateTournamentForm></CreateTournamentForm>
-      <h1>Tournaments</h1>
+      <h1 className="h1-tournament">Tournaments</h1>
       <div className="tournament-list">
         {tournaments.map((tournament) => (
           <div key={tournament.id} className="tournament-card">
@@ -44,6 +44,8 @@ const TournamentPage = ({ decodeToken }) => {
           </div>
         ))}
       </div>
+      <CreateTournamentForm></CreateTournamentForm>
+      <CreateLocationForm></CreateLocationForm>
     </>
   );
 };
