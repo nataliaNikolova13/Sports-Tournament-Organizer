@@ -26,7 +26,7 @@ const CreateTeam = () => {
         );
         setCategories(response.data);
       } catch (error) {
-        console.error("There was an error fetching the categories!", error);
+        setError(error.response?.data || "There was an error fetching the categories!" );
       }
     };
 
@@ -70,8 +70,7 @@ const CreateTeam = () => {
       setHideButton(true);
       setFormData({ name: "", category: "amateur" });
     } catch (error) {
-      console.error("There was an error creating the team!", error);
-      setError(true);
+      setError(error.response?.data ||"There was an error creating the team!");
     }
   };
 
@@ -114,11 +113,7 @@ const CreateTeam = () => {
               Cancel
             </button>
           </div>
-          {errors && (
-            <div>
-              <p>There was an error when creating a team</p>
-            </div>
-          )}
+            {errors && <div className="error-message">{errors}</div>}
         </form>
       )}
     </div>

@@ -20,7 +20,7 @@ const TournamentPage = ({ decodeToken }) => {
         setTournaments(response.data);
         console.log(response.data);
       } catch (err) {
-        setError("Error fetching tournaments. Please try again later.");
+        setError(err.response?.data || "Error fetching tournaments. Please try again later.");
       }
     };
 

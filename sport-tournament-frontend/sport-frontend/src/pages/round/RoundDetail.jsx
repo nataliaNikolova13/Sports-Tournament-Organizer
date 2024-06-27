@@ -25,7 +25,7 @@ const RoundDetail = () => {
         setMatches(response.data);
         console.log(response.data);
       } catch (err) {
-        setError("Error fetching round details. Please try again later.");
+        setError(err.response?.data || "Error fetching round details. Please try again later.");
       }
     };
     fetchRoundDetails();

@@ -94,7 +94,7 @@ public class TournamentController {
     }
 
     @PostMapping("/start-tournament/{id}")
-    @PreAuthorize("hasRole('Admin') or hasRole('Organizer') ")
+    @PreAuthorize("hasRole('Admin') or hasRole('Organizer')")
     public ResponseEntity<TournamentResponse> startTournament(@PathVariable Long id) {
         try {
 

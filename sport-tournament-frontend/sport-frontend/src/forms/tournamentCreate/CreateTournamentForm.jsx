@@ -52,7 +52,7 @@ const CreateTournamentForm = () => {
         setCategories(response.data);
         console.log(response.data);
       } catch (error) {
-        setError("There was an error fetching the categories!");
+        setError(error.response?.data || "There was an error fetching the categories!");
         console.error("Error fetching categories:", error);
       }
     };
@@ -99,8 +99,8 @@ const CreateTournamentForm = () => {
       console.log("Tournament created:", response.data);
       setStatus("Tournament was created");
     } catch (err) {
-      console.error("Error creating tournament:", err);
-      setStatus("Error when creating tournament");
+      console.error("Error creating tournament:", err.response.body);
+      setStatus(err.response?.data || "Error when creating tournament");
     }
   };
 

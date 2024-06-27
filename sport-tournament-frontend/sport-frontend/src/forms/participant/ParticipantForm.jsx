@@ -22,7 +22,7 @@ const ParticipantForm = ({ tournamentName, onClose }) => {
         );
         setTeams(response.data);
       } catch (err) {
-        setError("Error fetching teams. Please try again later.");
+        setError(err.response?.data || "Error fetching teams. Please try again later.");
       }
     };
 
@@ -47,14 +47,14 @@ const ParticipantForm = ({ tournamentName, onClose }) => {
       );
       onClose();
     } catch (err) {
-      setError("Error signing up for tournament. Please try again later.");
+      setError(err.response?.data || "Error signing up for tournament. Please try again later.");
     }
   };
 
   return (
     <div className="participant-form">
       <h2>Sign Up for {tournamentName}</h2>
-      {error && <p>{error}</p>}
+      {error && <div className="error-message">{error}</div>}
       <form onSubmit={handleSubmit}>
         <label htmlFor="team">Select Team:</label>
         <select

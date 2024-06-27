@@ -27,7 +27,7 @@ const TournamentDetail = () => {
         );
         setTournament(response.data);
       } catch (err) {
-        setError("Error fetching tournament details. Please try again later.");
+        setError(err.response?.data || "Error fetching tournament details. Please try again later.");
       }
     };
 
@@ -48,7 +48,7 @@ const TournamentDetail = () => {
         );
         setRounds(response.data);
       } catch (err) {
-        setError("Error fetching rounds. Please try again later.");
+        setError(err.response?.data || "Error fetching rounds. Please try again later.");
       }
     };
     fetchRounds();

@@ -27,7 +27,7 @@ const TeamDetail = ({ decodeToken }) => {
         );
         setTeam(response.data);
       } catch (err) {
-        setError("There was an error fetching the team.");
+        setError(err.response?.data || "There was an error fetching the team.");
       }
     };
 
@@ -48,7 +48,7 @@ const TeamDetail = ({ decodeToken }) => {
         );
         setParticipants(response.data);
       } catch (err) {
-        setError("There was an error fetching the team Participants.");
+        setError(err.response?.data || "There was an error fetching the team Participants.");
       }
     };
 
@@ -66,7 +66,7 @@ const TeamDetail = ({ decodeToken }) => {
         });
         setUsers(response.data);
       } catch (err) {
-        setError("There was an error fetching users.");
+        setError(err.response?.data || "There was an error fetching users.");
       }
     };
 
@@ -93,7 +93,7 @@ const TeamDetail = ({ decodeToken }) => {
       console.log("Participant added:", response.data);
       setAdded(true);
     } catch (err) {
-      setError("There was an error adding the participant.");
+      setError(err.response?.data || "There was an error adding the participant.");
     }
   };
 
@@ -116,7 +116,7 @@ const TeamDetail = ({ decodeToken }) => {
       setAdded(false);
       //   selectedUser(null);
     } catch (err) {
-      setError("There was an error deleting the participant.");
+      setError(err.response?.data || "There was an error deleting the participant.");
     }
   };
 

@@ -22,7 +22,7 @@ const TeamPage = ({ decodeToken }) => {
         );
         setTeams(response.data);
       } catch (err) {
-        setError("There was an error fetching the teams.");
+        setError(err.response?.data || "There was an error fetching the teams.");
       }
     };
 
