@@ -83,3 +83,7 @@ form button[type="button"]:hover {
 .form-create-team {
   margin-top: 30%;
 }
+
+.form-create-team {
+  padding-top: 340px;
+}
