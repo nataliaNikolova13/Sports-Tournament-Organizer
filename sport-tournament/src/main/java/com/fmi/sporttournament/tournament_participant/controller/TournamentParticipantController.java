@@ -1,9 +1,13 @@
 package com.fmi.sporttournament.tournament_participant.controller;
 
+import com.fmi.sporttournament.participant.service.ParticipantService;
+import com.fmi.sporttournament.tournament.entity.Tournament;
+import com.fmi.sporttournament.tournament.repository.TournamentRepository;
 import com.fmi.sporttournament.tournament_participant.dto.request.TournamentParticipantRequest;
 import com.fmi.sporttournament.tournament_participant.dto.response.TournamentParticipantResponse;
 import com.fmi.sporttournament.tournament_participant.entity.TournamentParticipant;
 import com.fmi.sporttournament.tournament_participant.mapper.TournamentParticipantMapper;
+import com.fmi.sporttournament.tournament_participant.repository.TournamentParticipantRepository;
 import com.fmi.sporttournament.tournament_participant.service.TournamentParticipantService;
 
 import jakarta.validation.Valid;
@@ -20,12 +24,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/tournament-participant")
 public class TournamentParticipantController {
     private final TournamentParticipantService tournamentParticipantService;
     private final TournamentParticipantMapper tournamentParticipantMapper;
+    private final TournamentRepository tournamentRepository;
+    private final TournamentParticipantRepository tournamentParticipantRepository;
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('Admin') or hasRole('Organizer') or hasRole('Participant')")
@@ -51,5 +59,14 @@ public class TournamentParticipantController {
         TournamentParticipant tournamentParticipant = tournamentParticipantService.deleteParticipantFromTeam(
             tournamentParticipantRequest);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/participants/teams/{tournamentId}")
+    public ResponseEntity<List<TournamentParticipant>> getParticipantsByTournament(@PathVariable Long tournamentId) {
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new RuntimeException("Tournament not found"));
+
+        List<TournamentParticipant> participants = tournamentParticipantService.getParticipantsByTournament(tournament);
+        return ResponseEntity.ok(participants);
     }
 }

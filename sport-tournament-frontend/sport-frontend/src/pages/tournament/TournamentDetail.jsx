@@ -12,6 +12,7 @@ const TournamentDetail = () => {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [rounds, setRounds] = useState([]);
+  const [participants, setParticipants] = useState([]);
 
   useEffect(() => {
     const fetchTournament = async () => {
@@ -27,7 +28,10 @@ const TournamentDetail = () => {
         );
         setTournament(response.data);
       } catch (err) {
-        setError(err.response?.data || "Error fetching tournament details. Please try again later.");
+        setError(
+          err.response?.data ||
+            "Error fetching tournament details. Please try again later."
+        );
       }
     };
 
@@ -48,11 +52,39 @@ const TournamentDetail = () => {
         );
         setRounds(response.data);
       } catch (err) {
-        setError(err.response?.data || "Error fetching rounds. Please try again later.");
+        setError(
+          err.response?.data || "Error fetching rounds. Please try again later."
+        );
       }
     };
+
     fetchRounds();
   }, [id]);
+
+  useEffect(() => {
+    const fetchParticipants = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          `http://localhost:8080/tournament-participant/participants/teams/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setParticipants(response.data);
+        console.log(response.data);
+      } catch (err) {
+        setError(
+          err.response?.data ||
+            "Error fetching participants. Please try again later."
+        );
+      }
+    };
+
+    fetchParticipants();
+  }, [id, rounds]);
   if (error) {
     return <p>{error}</p>;
   }
@@ -114,12 +146,34 @@ const TournamentDetail = () => {
       </div>
 
       <div className="round-div">
-        {rounds.length > 0 && <h1>Past rounds</h1>}
-        {rounds.map((round) => (
-          <div key={round.id}>
-            <Link to={`/round/${round.id}`}>Round {round.roundNumber}</Link>
+        {rounds.length > 0 ? (
+          <>
+            <h1>Past rounds</h1>
+            {rounds.map((round) => (
+              <div key={round.id}>
+                <Link to={`/round/${round.id}`}>Round {round.roundNumber}</Link>
+              </div>
+            ))}
+          </>
+        ) : (
+          <div className="participants-div">
+            <h1>Participants</h1>
+            {participants.length > 0 ? (
+              participants.map((participant) => (
+                <div key={participant.id}>
+                  <p>
+                    <strong>Name:</strong> {participant.team.name} -{" "}
+                    <strong>Date:</strong>{" "}
+                    {new Date(participant.timeStamp).toLocaleDateString()} -
+                    <strong> Status:</strong> {participant.status}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p>No participants found.</p>
+            )}
           </div>
-        ))}
+        )}
       </div>
     </>
   );
