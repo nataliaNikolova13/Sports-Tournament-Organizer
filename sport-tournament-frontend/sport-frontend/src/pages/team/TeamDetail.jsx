@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "./TeamDetail.css";
 
 const TeamDetail = ({ decodeToken }) => {
@@ -12,6 +13,7 @@ const TeamDetail = ({ decodeToken }) => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [added, setAdded] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTeam = async () => {
@@ -48,7 +50,10 @@ const TeamDetail = ({ decodeToken }) => {
         );
         setParticipants(response.data);
       } catch (err) {
-        setError(err.response?.data || "There was an error fetching the team Participants.");
+        setError(
+          err.response?.data ||
+            "There was an error fetching the team Participants."
+        );
       }
     };
 
@@ -93,7 +98,9 @@ const TeamDetail = ({ decodeToken }) => {
       console.log("Participant added:", response.data);
       setAdded(true);
     } catch (err) {
-      setError(err.response?.data || "There was an error adding the participant.");
+      setError(
+        err.response?.data || "There was an error adding the participant."
+      );
     }
   };
 
@@ -116,7 +123,26 @@ const TeamDetail = ({ decodeToken }) => {
       setAdded(false);
       //   selectedUser(null);
     } catch (err) {
-      setError(err.response?.data || "There was an error deleting the participant.");
+      setError(
+        err.response?.data || "There was an error deleting the participant."
+      );
+    }
+  };
+
+  const handleDeleteTeam = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://localhost:8080/teams/${teamId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      navigate("/team");
+    } catch (err) {
+      setError(
+        err.response?.data ||
+          "There was an error deleting the team. Please try again."
+      );
     }
   };
 
@@ -161,6 +187,11 @@ const TeamDetail = ({ decodeToken }) => {
           ))}
         </select>
         <button onClick={handleDeleteParticipant}>Delete Participant</button>
+      </div>
+      {error && <div className="error-message">{error}</div>}
+      <div className="delete-section">
+        <h3>Delete Team</h3>
+        <button onClick={handleDeleteTeam}>Delete Team</button>
       </div>
       {error && <div className="error-message">{error}</div>}
     </div>
