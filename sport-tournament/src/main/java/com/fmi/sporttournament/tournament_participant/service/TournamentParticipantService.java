@@ -290,4 +290,8 @@ public class TournamentParticipantService {
             tournamentParticipantRepository.save(participant);
         }
     }
+
+    public List<TournamentParticipant> getParticipantsByTournament(Tournament tournament) {
+        return tournamentParticipantRepository.findByTournament(tournament);
+    }
 }
