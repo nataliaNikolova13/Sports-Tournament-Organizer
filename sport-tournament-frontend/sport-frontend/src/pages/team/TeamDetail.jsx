@@ -11,7 +11,8 @@ const TeamDetail = ({ decodeToken }) => {
   const [participants, setParticipants] = useState([]);
   const [error, setError] = useState(null);
   const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedAddUser, setSelectedAddUser] = useState("");
+  const [selectedDeleteUser, setSelectedDeleteUser] = useState("");
   const [added, setAdded] = useState(false);
   const navigate = useNavigate();
 
@@ -85,7 +86,7 @@ const TeamDetail = ({ decodeToken }) => {
       const response = await axios.post(
         "http://localhost:8080/participant",
         {
-          userId: selectedUser,
+          userId: selectedAddUser,
           teamId: teamId,
         },
         {
@@ -108,10 +109,10 @@ const TeamDetail = ({ decodeToken }) => {
     setAdded(true);
     try {
       const token = localStorage.getItem("token");
-      console.log(selectedUser);
+      // console.log(selectedUser);
       await axios.delete("http://localhost:8080/participant", {
         data: {
-          userId: selectedUser,
+          userId: selectedDeleteUser,
           teamId: teamId,
         },
         headers: {
@@ -163,8 +164,8 @@ const TeamDetail = ({ decodeToken }) => {
       <div className="participant-section">
         <h3>Add Participant</h3>
         <select
-          value={selectedUser}
-          onChange={(e) => setSelectedUser(e.target.value)}
+          value={selectedAddUser}
+          onChange={(e) => setSelectedAddUser(e.target.value)}
         >
           <option value="">Select a user</option>
           {users.map((user) => (
@@ -176,8 +177,8 @@ const TeamDetail = ({ decodeToken }) => {
         <button onClick={handleAddParticipant}>Add Participant</button>
         <h3>Delete Participant</h3>
         <select
-          value={selectedUser}
-          onChange={(e) => setSelectedUser(e.target.value)}
+          value={selectedDeleteUser}
+          onChange={(e) => setSelectedDeleteUser(e.target.value)}
         >
           <option value="">Select a user</option>
           {users.map((user) => (
@@ -190,7 +191,6 @@ const TeamDetail = ({ decodeToken }) => {
       </div>
       {error && <div className="error-message">{error}</div>}
       <div className="delete-section">
-        <h3>Delete Team</h3>
         <button onClick={handleDeleteTeam}>Delete Team</button>
       </div>
       {error && <div className="error-message">{error}</div>}
