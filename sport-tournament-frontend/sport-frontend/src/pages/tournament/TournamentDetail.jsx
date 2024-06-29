@@ -3,6 +3,7 @@ import axios from "axios";
 import "./TournamentDetail.css";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Modal from "../../modal/Modal";
 import ParticipantForm from "../../forms/participant/ParticipantForm";
 import { jwtDecode } from "jwt-decode";
@@ -16,6 +17,7 @@ const TournamentDetail = () => {
   const [participants, setParticipants] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [participantToDelete, setParticipantToDelete] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -141,6 +143,23 @@ const TournamentDetail = () => {
     return <p>Loading...</p>;
   }
 
+  const handleDeleteTournament = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://localhost:8080/tournament/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      navigate("/tournaments");
+    } catch (err) {
+      setError(
+        err.response?.data ||
+          "Error deleting tournament. Please try again later."
+      );
+    }
+  };
+
   return (
     <>
       <div>
@@ -182,6 +201,11 @@ const TournamentDetail = () => {
         <p>
           <strong>Team Members Count:</strong> {tournament.teamMemberCount}
         </p>
+        {isAdmin && (
+          <button className="delete-btn" onClick={handleDeleteTournament}>
+            Delete Tournament
+          </button>
+        )}
         <button onClick={() => setIsModalOpen(true)}>
           Sign Up for Tournament
         </button>

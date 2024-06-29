@@ -52,7 +52,9 @@ const CreateTournamentForm = () => {
         setCategories(response.data);
         console.log(response.data);
       } catch (error) {
-        setError(error.response?.data || "There was an error fetching the categories!");
+        setError(
+          error.response?.data || "There was an error fetching the categories!"
+        );
         console.error("Error fetching categories:", error);
       }
     };
@@ -107,9 +109,11 @@ const CreateTournamentForm = () => {
   return (
     <div className="create-tournament-form-container">
       {!showForm && (
-        <button className="btn-show" onClick={() => setShowForm(true)}>
-          Create Tournament
-        </button>
+        <>
+          <button className="btn-show" onClick={() => setShowForm(true)}>
+            Create Tournament
+          </button>
+        </>
       )}
       {isOrganizer && showForm && (
         <>
