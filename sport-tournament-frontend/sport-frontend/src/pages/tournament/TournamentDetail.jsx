@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import Modal from "../../modal/Modal";
 import ParticipantForm from "../../forms/participant/ParticipantForm";
+import { jwtDecode } from "jwt-decode";
 
 const TournamentDetail = () => {
   const { id } = useParams();
@@ -13,6 +14,18 @@ const TournamentDetail = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [rounds, setRounds] = useState([]);
   const [participants, setParticipants] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [participantToDelete, setParticipantToDelete] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      const decoded = jwtDecode(token);
+      if (decoded.role === "[ROLE_Admin]") {
+        setIsAdmin(true);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const fetchTournament = async () => {
@@ -85,6 +98,42 @@ const TournamentDetail = () => {
 
     fetchParticipants();
   }, [id, rounds]);
+
+  const handleDelete = async () => {
+    console.log(1);
+    if (!participantToDelete) return;
+    console.log(2);
+
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://localhost:8080/tournament-participant`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        data: {
+          tournamentName: tournament.tournamentName,
+          teamName: participantToDelete.team.name,
+        },
+      });
+
+      setParticipants(
+        participants.filter(
+          (participant) => participant !== participantToDelete
+        )
+      );
+      setParticipantToDelete(null);
+    } catch (err) {
+      setError(
+        err.response?.data ||
+          "Error deleting participant. Please try again later."
+      );
+    }
+  };
+
+  useEffect(() => {
+    handleDelete();
+  }, [participantToDelete]);
+
   if (error) {
     return <p>{error}</p>;
   }
@@ -166,6 +215,15 @@ const TournamentDetail = () => {
                     <strong>Date:</strong>{" "}
                     {new Date(participant.timeStamp).toLocaleDateString()} -
                     <strong> Status:</strong> {participant.status}
+                    {isAdmin && participant.status === "joined" && (
+                      <button
+                        onClick={() => {
+                          setParticipantToDelete(participant);
+                        }}
+                      >
+                        Delete
+                      </button>
+                    )}
                   </p>
                 </div>
               ))
